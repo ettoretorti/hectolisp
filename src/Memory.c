@@ -1,18 +1,22 @@
 #include "SchemeSecret.h"
+#include <stddef.h>
+#include <assert.h>
 
 #define MEM_SIZE 5000
 
-static Expr pool[MEM_SIZE];
-static Expr* free;
+//TODO: remove
+extern void free(void* ptr);
 
-scm_init_mem() {
-	used = NULL;
-	free = &pool[0];
+static Expr pool[MEM_SIZE];
+static Expr* freeList = NULL;
+
+void scm_init_mem() {
+	freeList = &pool[0];
 	pool[0].pair.car = &pool[MEM_SIZE-1];
 	pool[0].pair.cdr = &pool[1];
-	poo[0].protect = false;
+	pool[0].protect = false;
 
-	for(size_t i=1; i<MEMSIZE-1; i++) {
+	for(size_t i=1; i<MEM_SIZE-1; i++) {
 		pool[i].pair.car = &pool[i-1];
 		pool[i].pair.cdr = &pool[i+1];
 		pool[i].protect = false;
@@ -25,6 +29,8 @@ scm_init_mem() {
 }
 
 static Expr* dll_insert(Expr* node, Expr* list) {
+	assert(node);
+
 	//empty
 	if(!list) {
 		node->pair.car = node->pair.cdr = NULL;
@@ -33,8 +39,9 @@ static Expr* dll_insert(Expr* node, Expr* list) {
 	
 	//1 element
 	if(!list->pair.car) {
+		assert(!list->pair.cdr);
 		list->pair.car = list->pair.cdr = node;
-		node->pair.car = node->pair.car = list;
+		node->pair.car = node->pair.cdr = list;
 		return node;
 	}
 
@@ -49,6 +56,8 @@ static Expr* dll_insert(Expr* node, Expr* list) {
 }
 
 static Expr* dll_remove(Expr* node) {
+	assert(node);
+	
 	Expr* new = node->pair.cdr;
 
 	//1 element
@@ -61,43 +70,56 @@ static Expr* dll_remove(Expr* node) {
 	}
 
 	//any number
-	new->pair.car->pair.cdr = new->pair.cdr;
-	new->pair.cdr->pair.car = new->pair.car;
+	new->pair.car = node->pair.car;
+	node->pair.car->pair.cdr = new;
 
 	return new;
 }
 
-
 Expr* scm_alloc() {
-	if(!free) scm_gc();
-	if(!free) return NULL;
+	if(!freeList) scm_gc();
+	if(!freeList) return NULL;
 	
-	Expr* toRet = free;
-	free = dll_remove(toRet);
+	Expr* toRet = freeList;
+	freeList = dll_remove(toRet);
 
 	return toRet;
 }
 
 static void cleanup(Expr* e) {
-	if(scm_is_atom(e) && (scm_is_string(e) || scm_is_symbol(c))) {
+	assert(e);
+
+	if(scm_is_atom(e) && (scm_is_string(e) || scm_is_symbol(e))) {
 		free(e->atom.sval);
 		e->atom.sval = NULL;
 	}
 }
 
+static void mark(Expr* e) {
+	assert(e);
+	
+	if(e->mark) return;
+	
+	e->mark = true;
+	if(scm_is_pair(e)) {
+		mark(scm_car(e));
+		mark(scm_cdr(e));
+	}
+}
+
 void scm_gc() {
-	free = NULL;
+	freeList = NULL;
 
 	for(size_t i=0; i<MEM_SIZE; i++) {
 		pool[i].mark = false;
 	}
 
 	//TODO actual marking
-	
+
 	for(size_t i=0; i<MEM_SIZE; i++) {
 		if(!pool[i].mark && !pool[i].protect) {
 			cleanup(&pool[i]);
-			free = dll_insert(&pool[i], free);
+			freeList = dll_insert(&pool[i], freeList);
 		}
 	}
 }
