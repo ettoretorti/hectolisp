@@ -1,35 +1,130 @@
 #include "SchemeSecret.h"
+#include <stddef.h>
 #include <stdbool.h>
+#include <assert.h>
 
-bool scm_is_atom(const Expr* e) { return e->tag == ATOM; }
-bool scm_is_pair(const Expr* e) { return e->tag == PAIR; }
+static Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true  };
+Expr* EMPTY_LIST = &_EMPTY_LIST;
 
-bool scm_is_int(const Expr* e)    { return e->atom.type == INT; }
-bool scm_is_bool(const Expr* e)   { return e->atom.type == BOOL; }
-bool scm_is_char(const Expr* e)   { return e->atom.type == CHAR; }
-bool scm_is_string(const Expr* e) { return e->atom.type == STRING; }
-bool scm_is_symbol(const Expr* e) { return e->atom.type == SYMBOL; }
+static Expr _TRUE = { .tag = ATOM, .atom = { .type = BOOL, .bval = true }, .protect = true };
+Expr* TRUE = &_TRUE;
 
-int   scm_ival(const Expr* e) { return e->atom.ival; }
-char  scm_cval(const Expr* e) { return e->atom.cval; }
-char* scm_sval(const Expr* e) { return e->atom.sval; }
-bool  scm_bval(const Expr* e) { return e->atom.bval; }
-Expr* scm_car(Expr* e) { return e->pair.car; };
-Expr* scm_cdr(Expr* e) { retirm e->pair.cdr; };
+static Expr _FALSE = { .tag = ATOM, .atom = { .type = BOOL, .bval = false }, .protect = true };
+Expr* FALSE = &_FALSE;
 
+static Expr _DEFINE = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "DEFINE" }, .protect = true };
+Expr* DEFINE = &_DEFINE;
+
+static Expr _SET = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "SET!" }, .protect = true };
+Expr* SET = &_SET;
+
+static Expr _IF = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "IF" }, .protect = true };
+Expr* IF = &_IF;
+
+bool scm_is_atom(const Expr* e) {
+	assert(e);
+	return e->tag == ATOM;
+}
+bool scm_is_pair(const Expr* e) {
+	assert(e);
+	return e->tag == PAIR;
+}
+
+bool scm_is_int(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM);
+	return e->atom.type == INT;
+}
+bool scm_is_real(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM);
+	return e->atom.type == REAL;
+}
+bool scm_is_bool(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM);
+	return e->atom.type == BOOL;
+}
+bool scm_is_char(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM);
+	return e->atom.type == CHAR;
+}
+bool scm_is_string(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM);
+	return e->atom.type == STRING;
+}
+bool scm_is_symbol(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM);
+	return e->atom.type == SYMBOL;
+}
+
+int scm_ival(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM && e->atom.type == INT);
+	return e->atom.ival;
+}
+double scm_rval(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM && e->atom.type == REAL);
+	return e->atom.rval;
+}
+char scm_cval(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM && e->atom.type == CHAR);
+	return e->atom.cval;
+}
+char* scm_sval(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM && (e->atom.type == STRING || e->atom.type == SYMBOL));
+	return e->atom.sval;
+}
+bool scm_bval(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM && e->atom.type == BOOL);
+	return e->atom.bval;
+}
+Expr* scm_car(Expr* e) {
+	assert(e);
+	assert(e->tag == PAIR);
+	return e->pair.car;
+}
+Expr* scm_cdr(Expr* e) {
+	assert(e);
+	assert(e->tag == PAIR);
+	return e->pair.cdr;
+}
 
 Expr* scm_mk_int(int v) {
-	if(Expr* toRet = scm_alloc()) {
+	Expr* toRet = NULL;
+
+	if(toRet = scm_alloc()) {
 		toRet->tag = ATOM;
 		toRet->atom.type = INT;
 		toRet->atom.ival = v;
 		return toRet;
 	}
-	return NULL;
+	return toRet;
 }
 
+Expr* scm_mk_real(double v) {
+	Expr* toRet = NULL;
+
+	if(toRet = scm_alloc()) {
+		toRet->tag = ATOM;
+		toRet->atom.type = REAL;
+		toRet->atom.rval = v;
+	}
+	return toRet;
+}
+
+
 Expr* scm_mk_char(char v) {
-	if(Expr* toRet = scm_alloc()) {
+	Expr* toRet = NULL;
+
+	if(toRet = scm_alloc()) {
 		toRet->tag = ATOM;
 		toRet->atom.type = CHAR;
 		toRet->atom.cval = v;
@@ -39,16 +134,25 @@ Expr* scm_mk_char(char v) {
 }
 
 Expr* scm_mk_string(const char* v) {
-	if(Expr* toRet = scm_alloc()) {
+	assert(v);
+
+	Expr* toRet = NULL;
+	
+	if(toRet = scm_alloc()) {
 		toRet->tag = ATOM;
-		toRet->atom.type = STRIMG;
+		toRet->atom.type = STRING;
 		toRet->atom.sval = strdup(v);
 		return toRet;
 	}
 	return NULL;
 }
+
 Expr* scm_mk_symbol(const char* v) {
-	if(Expr* toRet = scm_mk_string()) {
+	assert(v);
+
+	Expr* toRet = NULL;
+	
+	if(toRet = scm_mk_string(v)) {
 		toRet->atom.type = SYMBOL;
 		return toRet;
 	}
@@ -56,7 +160,12 @@ Expr* scm_mk_symbol(const char* v) {
 }
 
 Expr* scm_mk_pair(Expr* car, Expr* cdr) {
-	if(Expr* toRet = scm_alloc()) {
+	assert(car);
+	assert(cdr);
+
+	Expr* toRet = NULL;
+	
+	if(toRet = scm_alloc()) {
 		toRet->tag = PAIR;
 		toRet->pair.car = car;
 		toRet->pair.cdr = cdr;
