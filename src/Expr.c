@@ -3,22 +3,22 @@
 #include <stdbool.h>
 #include <assert.h>
 
-static Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true  };
+static Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true, .mark = true };
 Expr* EMPTY_LIST = &_EMPTY_LIST;
 
-static Expr _TRUE = { .tag = ATOM, .atom = { .type = BOOL, .bval = true }, .protect = true };
+static Expr _TRUE = { .tag = ATOM, .atom = { .type = BOOL, .bval = true }, .protect = true, .mark = true };
 Expr* TRUE = &_TRUE;
 
-static Expr _FALSE = { .tag = ATOM, .atom = { .type = BOOL, .bval = false }, .protect = true };
+static Expr _FALSE = { .tag = ATOM, .atom = { .type = BOOL, .bval = false }, .protect = true, .mark = true };
 Expr* FALSE = &_FALSE;
 
-static Expr _DEFINE = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "DEFINE" }, .protect = true };
+static Expr _DEFINE = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "DEFINE" }, .protect = true, .mark = true };
 Expr* DEFINE = &_DEFINE;
 
-static Expr _SET = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "SET!" }, .protect = true };
+static Expr _SET = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "SET!" }, .protect = true, .mark = true };
 Expr* SET = &_SET;
 
-static Expr _IF = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "IF" }, .protect = true };
+static Expr _IF = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "IF" }, .protect = true, .mark = true };
 Expr* IF = &_IF;
 
 bool scm_is_atom(const Expr* e) {
