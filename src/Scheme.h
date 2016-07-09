@@ -6,8 +6,7 @@
 extern "C" {
 #endif
 
-typedef struct Expr {
-	enum { ATOM, PAIR } tag;
+typedef struct __attribute__((packed)) Expr {
 	union {
 		struct {
 			enum { INT, REAL, CHAR, STRING, SYMBOL, BOOL } type;
@@ -25,8 +24,9 @@ typedef struct Expr {
 			struct Expr* cdr;
 		} pair;
 	};
-	bool protect;
-	bool mark;
+	enum { ATOM, PAIR } tag : 1;
+	bool protect : 1;
+	bool mark : 1;
 } Expr;
 
 
