@@ -110,8 +110,14 @@ static void mark(Expr* e) {
 void scm_gc() {
 	freeList = NULL;
 
-	for(size_t i=0; i<MEM_SIZE; i++) {
+	for(size_t i = 0; i < MEM_SIZE; i++) {
 		pool[i].mark = false;
+	}
+
+	for(size_t i = 0; i < MEM_SIZE; i++) {
+		if(pool[i].protect) {
+			mark(&pool[i]);
+		}
 	}
 
 	//TODO actual marking
