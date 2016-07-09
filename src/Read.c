@@ -124,29 +124,9 @@ static Expr* read_symbol(Buffer* b) {
 	}
 }
 
-static Expr* read_int(Buffer* b, int sign) {
-	long long buf = 0;
-
-	while(true) {
-		char c = b_get(b);
-
-		if(is_bound(c)) break; 
-
-		if(isdigit(c)) {
-			buf *= 10;
-			buf += c - '0';
-		} else {
-			b_eat_til_bound(b);
-			return EMPTY_LIST;
-		}
-	}
-
-	return scm_mk_int(buf * sign);
-}
-
-
-static Expr* read_real(Buffer* b, int sign) {
+static Expr* read_num(Buffer* b, int sign) {
 	double buf = 0.0;
+	long long lbuf = 0;
 	double nDecimals = 1.0;
 	bool postDec = false;
 
@@ -171,20 +151,16 @@ static Expr* read_real(Buffer* b, int sign) {
 		if(!postDec) {
 			buf *= 10;
 			buf += c - '0';
+
+			lbuf *= 10;
+			lbuf += c - '0';
 		} else {
 			nDecimals /= 10;
 			buf += ((double) c - '0') * nDecimals;
 		}
 	}
-
-	return scm_mk_real(buf * sign);
-}
-
-static Expr* read_num(Buffer* b, int sign) {
-	assert(isdigit(b_peek(b)));
-
-	//TODO
-	return read_real(b, sign);
+	
+	return postDec ? scm_mk_real(buf * sign) : scm_mk_int(lbuf * sign);;
 }
 
 static Expr* reade(Buffer* b);

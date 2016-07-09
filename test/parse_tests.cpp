@@ -6,17 +6,25 @@
 TEST(Parsing, Atoms) {
 	scm_init_mem();
 	
-	//Expr* i = scm_read("42");
-	//EXPECT_TRUE(scm_is_int(i));
-	//EXPECT_EQ(42, scm_ival(i));
+	Expr* i = scm_read("42");
+	EXPECT_TRUE(scm_is_int(i));
+	EXPECT_EQ(42, scm_ival(i));
 
 	Expr* r = scm_read("42.0");
 	EXPECT_TRUE(scm_is_real(r));
 	EXPECT_EQ(42.0, scm_rval(r));
 
-	//Expr* c = scm_read("#\\c");
-	//EXPECT_TRUE(scm_is_char(c));
-	//EXPECT_EQ('c', scm_cval(c));
+	Expr* c = scm_read("#\\c");
+	EXPECT_TRUE(scm_is_char(c));
+	EXPECT_EQ('c', scm_cval(c));
+
+	Expr* n = scm_read("#\\newline");
+	EXPECT_TRUE(scm_is_char(n));
+	EXPECT_EQ('\n', scm_cval(n));
+
+	Expr* s = scm_read("#\\space");
+	EXPECT_TRUE(scm_is_char(s));
+	EXPECT_EQ(' ', scm_cval(s));
 
 	Expr* t = scm_read("#t");
 	EXPECT_TRUE(scm_is_bool(t));
