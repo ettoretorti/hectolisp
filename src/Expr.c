@@ -61,7 +61,7 @@ bool scm_is_symbol(const Expr* e) {
 	return e->atom.type == SYMBOL;
 }
 
-int scm_ival(const Expr* e) {
+long long scm_ival(const Expr* e) {
 	assert(e);
 	assert(e->tag == ATOM && e->atom.type == INT);
 	return e->atom.ival;

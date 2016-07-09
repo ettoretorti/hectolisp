@@ -55,13 +55,13 @@ bool scm_is_true(const Expr* e);
 
 
 // EXPR ACCESSORS
-int    scm_ival(const Expr* e);
-double scm_rval(const Expr* e);
-char   scm_cval(const Expr* e);
-char*  scm_sval(const Expr* e);
-bool   scm_bval(const Expr* e);
-Expr*  scm_car(Expr* e);
-Expr*  scm_cdr(Expr* e);
+long long scm_ival(const Expr* e);
+double    scm_rval(const Expr* e);
+char      scm_cval(const Expr* e);
+char*     scm_sval(const Expr* e);
+bool      scm_bval(const Expr* e);
+Expr*     scm_car(Expr* e);
+Expr*     scm_cdr(Expr* e);
 
 
 // EXPR_CONSTRUCTORS
