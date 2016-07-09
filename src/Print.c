@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct {
 	char* buf;
@@ -68,7 +69,22 @@ static void print_bool(bool bval, buf* b) {
 
 static void print_char(char cval, buf* b) {
 	assert(b);
-	//TODO
+	
+	char cbuf[10] = "#\\newline";
+
+	switch(cval) {
+		case '\n':
+			break;
+		case ' ':
+			strcpy(cbuf, "#\\space");
+			break;
+		default:
+			cbuf[2] = cval;
+			cbuf[3] = '\0';
+			break;
+	}
+
+	append(b, cbuf);
 }
 
 static void print(Expr* e, buf* b);
@@ -125,7 +141,7 @@ static void print(Expr* e, buf* b) {
 		print_bool(scm_bval(e), b);
 		break;
 	case CHAR:
-		print_char(scm_rval(e), b);
+		print_char(scm_cval(e), b);
 		break;
 	case STRING:
 		//TODO escaping

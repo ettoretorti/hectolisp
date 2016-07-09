@@ -58,8 +58,18 @@ static inline void b_unget(Buffer* b) {
 }
 
 static Expr* read_char(Buffer* b) {
-	//TODO
-	return NULL;
+	char c = b_get(b);
+	char p = b_peek(b);
+	
+	if(c == 'n' && p == 'e') {
+		b_eat_til_bound(b);
+		c = '\n';
+	} else if(c == 's' && p == 'p') {
+		b_eat_til_bound(b);
+		c = ' ';
+	}
+
+	return scm_mk_char(c);
 }
 
 static Expr* read_string(Buffer* b) {
