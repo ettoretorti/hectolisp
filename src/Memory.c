@@ -1,3 +1,22 @@
+/* This file handles all of the memory management and garbage collection. The
+ * basic ideas behind it are:
+ *   - A fixed-size pool of Exprs is allocated statically
+ *   - A doubly-linked freelist is created out of them using the pair cells
+ *   - Allocating an Expr involves extracting the head of the freelist
+ *   - Freeing an Expr involves inserting it back into the freelist
+ *
+ * Garbage collection is done by setting the mark bits of all the Exprs in the
+ * pool, followed by doing a recursive marking of Exprs in use starting from
+ * known entry points (the scheme environment) and Exprs that have their
+ * protected bits set. Once this is done, all unmarked Exprs are linked
+ * together to form a new freelist.
+ *
+ * TODO:
+ *   - Use the Schorr-Deutch-Waite link-inversion algorithm for marking
+ *   - Allow multiple dynamic pools
+ *   - Switch to an incremental gc algorithm
+ */
+
 #include "SchemeSecret.h"
 #include <stddef.h>
 #include <assert.h>
