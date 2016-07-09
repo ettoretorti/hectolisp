@@ -26,6 +26,11 @@ if(NOT "${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
         hlisp
         PRIVATE -Wextra
         PRIVATE -pedantic)
+    if(CMAKE_BUILD_TYPE EQUAL "DEBUG")
+        target_compile_options(
+            hlisp
+	    PRIVATE -fsanitize=address)
+    endif()
 endif()
 
 
