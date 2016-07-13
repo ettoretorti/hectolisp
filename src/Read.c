@@ -226,8 +226,6 @@ static Expr* reade(Buffer* b) {
 			b_unget(b);
 			final = read_symbol(b);
 		}
-	} else if(isalpha(cur)) {
-		final = read_symbol(b);
 	} else if(cur == '"') {
 		final = read_string(b);
 	} else if(cur == '#') {
@@ -238,6 +236,8 @@ static Expr* reade(Buffer* b) {
 			c == 'f'  ? FALSE :
 			c == '\\' ? read_char(b) :
 			            EMPTY_LIST;
+	} else if(!is_bound(cur) && !isdigit(cur)) {
+		final = read_symbol(b);
 	}
 
 	return final;
