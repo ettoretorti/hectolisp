@@ -108,7 +108,7 @@ Expr* scm_alloc() {
 static void cleanup(Expr* e) {
 	assert(e);
 
-	if(scm_is_atom(e) && (scm_is_string(e) || scm_is_symbol(e))) {
+	if(scm_is_atom(e) && (scm_is_string(e) || scm_is_symbol(e) || scm_is_error(e))) {
 		free(e->atom.sval);
 		e->atom.sval = NULL;
 	}
@@ -124,6 +124,16 @@ static void mark(Expr* e) {
 		mark(scm_car(e));
 		mark(scm_cdr(e));
 	}
+}
+
+void scm_protect(Expr* e) {
+	assert(e);
+	e->protect = true;
+}
+
+void scm_unprotect(Expr* e) {
+	assert(e);
+	e->protect = false;
 }
 
 void scm_gc() {

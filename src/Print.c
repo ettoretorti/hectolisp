@@ -152,6 +152,11 @@ static void print(Expr* e, buf* b) {
 	case SYMBOL:
 		append(b, scm_sval(e));
 		break;
+	case ERROR:
+		append(b, "#(ERROR: ");
+		append(b, scm_sval(e));
+		append(b, ")#");
+		break;
 	default:
 		append(b, "#UNKNOWN#");
 		break;

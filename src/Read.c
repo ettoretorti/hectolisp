@@ -84,7 +84,7 @@ static Expr* read_string(Buffer* b) {
 		assert(idx < 10240);
 
 		c = b_get(b);
-		if(c == '\0') return EMPTY_LIST;
+		if(c == '\0') return scm_mk_error("End of input before closing \" in string");
 		if(c == '"') {
 			buf[idx] = '\0';
 			break;
@@ -92,7 +92,7 @@ static Expr* read_string(Buffer* b) {
 
 		if(c == '\\') {
 			c = b_get(b);
-			if(c == '\0') return EMPTY_LIST;
+			if(c == '\0') return scm_mk_error("End of input before closing \" in string");
 
 			c = c == 'n' ? '\n' :
 			    c == 't' ? '\t' :
@@ -145,7 +145,7 @@ static Expr* read_num(Buffer* b, int sign) {
 
 		if(!isdigit(c)) {
 			b_eat_til_bound(b);
-			return EMPTY_LIST;
+			return scm_mk_error("Found non digit character in number");
 		}
 
 		if(!postDec) {
@@ -178,6 +178,7 @@ Expr* reade_list(Buffer* b) {
 	}
 
 	Expr* read = reade(b);
+	if(scm_is_error(read)) return read;
 	Expr* car = scm_mk_pair(read, EMPTY_LIST);
 	Expr* toRet = car;
 
@@ -189,7 +190,7 @@ Expr* reade_list(Buffer* b) {
 			b_eat_white(b);
 			if(b_get(b) != ')') {
 				b_eat_til_bound(b);
-				return EMPTY_LIST;
+				return scm_mk_error("Couldn't find expected closing ) for list");
 			}
 			break;
 		} else if(b_peek(b) == ')') {
@@ -197,6 +198,7 @@ Expr* reade_list(Buffer* b) {
 			return toRet;
 		} else {
 			read = reade(b);
+			if(scm_is_error(read)) return read;
 			Expr* ncdr = scm_mk_pair(read, EMPTY_LIST);
 			car->pair.cdr = ncdr;
 			car = ncdr;
@@ -235,9 +237,15 @@ static Expr* reade(Buffer* b) {
 		final = c == 't'  ? TRUE :
 			c == 'f'  ? FALSE :
 			c == '\\' ? read_char(b) :
-			            EMPTY_LIST;
+			            scm_mk_error("Didn't find expected boolean or character after #");
 	} else if(!is_bound(cur) && !isdigit(cur)) {
 		final = read_symbol(b);
+	} else if(cur == ')') {
+		final = scm_mk_error("Unexpected ')'");
+	} else if(cur == '\0') {
+		final = scm_mk_error("End of input");
+	} else {
+		final = scm_mk_error("Unknown error");
 	}
 
 	return final;

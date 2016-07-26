@@ -32,33 +32,31 @@ bool scm_is_pair(const Expr* e) {
 
 bool scm_is_int(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM);
-	return e->atom.type == INT;
+	return e->tag == ATOM && e->atom.type == INT;
 }
 bool scm_is_real(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM);
-	return e->atom.type == REAL;
+	return e->tag == ATOM && e->atom.type == REAL;
 }
 bool scm_is_bool(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM);
-	return e->atom.type == BOOL;
+	return e->tag == ATOM && e->atom.type == BOOL;
 }
 bool scm_is_char(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM);
-	return e->atom.type == CHAR;
+	return e->tag == ATOM && e->atom.type == CHAR;
 }
 bool scm_is_string(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM);
-	return e->atom.type == STRING;
+	return e->tag == ATOM && e->atom.type == STRING;
 }
 bool scm_is_symbol(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM);
-	return e->atom.type == SYMBOL;
+	return e->tag == ATOM && e->atom.type == SYMBOL;
+}
+bool scm_is_error(const Expr* e) {
+	assert(e);
+	return e->tag == ATOM && e->atom.type == ERROR;
 }
 
 long long scm_ival(const Expr* e) {
@@ -78,7 +76,7 @@ char scm_cval(const Expr* e) {
 }
 char* scm_sval(const Expr* e) {
 	assert(e);
-	assert(e->tag == ATOM && (e->atom.type == STRING || e->atom.type == SYMBOL));
+	assert(e->tag == ATOM && (e->atom.type == STRING || e->atom.type == SYMBOL || e->atom.type == ERROR));
 	return e->atom.sval;
 }
 bool scm_bval(const Expr* e) {
@@ -154,6 +152,18 @@ Expr* scm_mk_symbol(const char* v) {
 	
 	if(toRet = scm_mk_string(v)) {
 		toRet->atom.type = SYMBOL;
+		return toRet;
+	}
+	return NULL;
+}
+
+Expr* scm_mk_error(const char* v) {
+	assert(v);
+
+	Expr* toRet = NULL;
+	
+	if(toRet = scm_mk_string(v)) {
+		toRet->atom.type = ERROR;
 		return toRet;
 	}
 	return NULL;
