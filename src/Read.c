@@ -49,7 +49,8 @@ static inline char b_get(Buffer* b) {
 }
 
 static inline char b_peek(const Buffer* b) {
-	return b->s[b->i];
+	if(b->i < b->n) return b->s[b->i];
+	else            return '\0';
 }
 
 static inline void b_unget(Buffer* b) {
