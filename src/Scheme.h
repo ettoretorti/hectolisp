@@ -56,8 +56,10 @@ bool scm_is_char(const Expr* e);
 bool scm_is_string(const Expr* e);
 bool scm_is_symbol(const Expr* e);
 bool scm_is_error(const Expr* e);
+bool scm_is_ffunc(const Expr* e);
 
 bool scm_is_true(const Expr* e);
+bool scm_is_list(const Expr* e);
 
 
 // EXPR ACCESSORS
@@ -66,6 +68,7 @@ double    scm_rval(const Expr* e);
 char      scm_cval(const Expr* e);
 char*     scm_sval(const Expr* e);
 bool      scm_bval(const Expr* e);
+ffunc     scm_ffval(const Expr* e);
 Expr*     scm_car(Expr* e);
 Expr*     scm_cdr(Expr* e);
 

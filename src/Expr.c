@@ -58,6 +58,21 @@ bool scm_is_error(const Expr* e) {
 	assert(e);
 	return e->tag == ATOM && e->atom.type == ERROR;
 }
+bool scm_is_ffunc(const Expr* e) {
+	assert(e);
+	return e->tag == ATOM && e->atom.type == FFUNC;
+}
+bool scm_is_true(const Expr* e) {
+	assert(e);
+	return e != FALSE;
+}
+bool scm_is_list(const Expr* e) {
+	assert(e);
+	while(scm_is_pair(e) && e != EMPTY_LIST) {
+		e = scm_cdr(e);
+	}
+	return scm_is_pair(e);
+}
 
 long long scm_ival(const Expr* e) {
 	assert(e);
@@ -84,6 +99,12 @@ bool scm_bval(const Expr* e) {
 	assert(e->tag == ATOM && e->atom.type == BOOL);
 	return e->atom.bval;
 }
+ffunc scm_ffval(const Expr* e) {
+	assert(e);
+	assert(e->tag == ATOM && e->atom.type == FFUNC);
+	return e->atom.ffptr;
+}
+
 Expr* scm_car(Expr* e) {
 	assert(e);
 	assert(e->tag == PAIR);
