@@ -45,7 +45,6 @@ TEST(Parsing, Atoms) {
 	EXPECT_STREQ("symbol", scm_sval(sym));
 
 	Expr* e = scm_read("()");
-	EXPECT_TRUE(scm_is_pair(e));
 	EXPECT_EQ(EMPTY_LIST, e);
 
 	scm_gc();

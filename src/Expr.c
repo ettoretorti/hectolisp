@@ -27,7 +27,7 @@ bool scm_is_atom(const Expr* e) {
 }
 bool scm_is_pair(const Expr* e) {
 	assert(e);
-	return e->tag == PAIR;
+	return e != EMPTY_LIST && e->tag == PAIR;
 }
 
 bool scm_is_int(const Expr* e) {
