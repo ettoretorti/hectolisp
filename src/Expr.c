@@ -72,10 +72,10 @@ bool scm_is_false(const Expr* e) {
 }
 bool scm_is_list(const Expr* e) {
 	assert(e);
-	while(scm_is_pair(e) && e != EMPTY_LIST) {
+	while(scm_is_pair(e)) {
 		e = scm_cdr(e);
 	}
-	return scm_is_pair(e);
+	return e == EMPTY_LIST;
 }
 
 long long scm_ival(const Expr* e) {
