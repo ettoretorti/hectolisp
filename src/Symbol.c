@@ -82,7 +82,7 @@ static AVL* avl_insert(AVL* avl, const char* key, Expr** res) {
 		//bypass the scheme GC since interned symbols are forever anyway
 		AVL* new = (AVL*) malloc(sizeof(AVL));
 		if(!new) {
-			*res = OOM;
+			*res = NULL;
 			return NULL;
 		}
 		new->l = new->r = NULL;
@@ -90,7 +90,7 @@ static AVL* avl_insert(AVL* avl, const char* key, Expr** res) {
 		new->v = (Expr*) malloc(sizeof(Expr));
 		if(!new->v) {
 			free(new);
-			*res = OOM;
+			*res = NULL;
 			return NULL;
 		}
 		new->v->mark = new->v->protect = true;
