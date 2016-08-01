@@ -122,9 +122,9 @@ Expr* scm_cdr(const Expr* e) {
 }
 
 Expr* scm_mk_int(int v) {
-	Expr* toRet = NULL;
+	Expr* toRet = scm_alloc();
 
-	if(toRet = scm_alloc()) {
+	if(toRet) {
 		toRet->tag = ATOM;
 		toRet->atom.type = INT;
 		toRet->atom.ival = v;
@@ -133,9 +133,9 @@ Expr* scm_mk_int(int v) {
 }
 
 Expr* scm_mk_real(double v) {
-	Expr* toRet = NULL;
+	Expr* toRet = scm_alloc();
 
-	if(toRet = scm_alloc()) {
+	if(toRet) {
 		toRet->tag = ATOM;
 		toRet->atom.type = REAL;
 		toRet->atom.rval = v;
@@ -145,9 +145,9 @@ Expr* scm_mk_real(double v) {
 
 
 Expr* scm_mk_char(char v) {
-	Expr* toRet = NULL;
+	Expr* toRet = scm_alloc();
 
-	if(toRet = scm_alloc()) {
+	if(toRet) {
 		toRet->tag = ATOM;
 		toRet->atom.type = CHAR;
 		toRet->atom.cval = v;
@@ -156,9 +156,9 @@ Expr* scm_mk_char(char v) {
 }
 
 Expr* scm_mk_string(const char* v) {
-	Expr* toRet = NULL;
+	Expr* toRet = scm_alloc();
 	
-	if(toRet = scm_alloc()) {
+	if(toRet) {
 		toRet->tag = ATOM;
 		toRet->atom.type = STRING;
 		toRet->atom.sval = strdup(v);
@@ -171,24 +171,21 @@ Expr* scm_mk_symbol(const char* v) {
 }
 
 Expr* scm_mk_error(const char* v) {
-	assert(v);
-
-	Expr* toRet = NULL;
+	Expr* toRet = scm_mk_string(v);
 	
-	if(toRet = scm_mk_string(v)) {
+	if(toRet) {
 		toRet->atom.type = ERROR;
-		return toRet;
 	}
-	return NULL;
+	return toRet;
 }
 
 Expr* scm_mk_pair(Expr* car, Expr* cdr) {
 	assert(car);
 	assert(cdr);
 
-	Expr* toRet = NULL;
+	Expr* toRet = scm_alloc();
 	
-	if(toRet = scm_alloc()) {
+	if(toRet) {
 		toRet->tag = PAIR;
 		toRet->pair.car = car;
 		toRet->pair.cdr = cdr;
