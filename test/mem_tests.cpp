@@ -39,6 +39,16 @@ TEST(Memory, CheckAllocation) {
 	scm_reset();
 }
 
+TEST(Memory, SymbolUniqueness) {
+	scm_init();
+
+	Expr* fst = scm_mk_symbol("symbol");
+	Expr* snd = scm_mk_symbol("symbol");
+	EXPECT_EQ(fst, snd);
+
+	scm_reset();
+}
+
 TEST(Memory, CheckCorruption) {
 	scm_init();
 	
