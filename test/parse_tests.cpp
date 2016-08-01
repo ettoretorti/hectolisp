@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 TEST(Parsing, Atoms) {
-	scm_init_mem();
+	scm_init();
 	
 	Expr* i = scm_read("42");
 	EXPECT_TRUE(scm_is_int(i));
@@ -47,11 +47,11 @@ TEST(Parsing, Atoms) {
 	Expr* e = scm_read("()");
 	EXPECT_EQ(EMPTY_LIST, e);
 
-	scm_gc();
+	scm_reset();
 }
 
 TEST(Parsing, Pairs) {
-	scm_init_mem();
+	scm_init();
 	
 	Expr* a = scm_read("(() . ())");
 	EXPECT_TRUE(scm_is_pair(a));
@@ -90,11 +90,11 @@ TEST(Parsing, Pairs) {
 
 	Expr* g = scm_read("((a . b) . c)");
 
-	scm_gc();
+	scm_reset();
 }
 
 TEST(Parsing, Lists) {
-	scm_init_mem();
+	scm_init();
 
-	scm_gc();
+	scm_reset();
 }

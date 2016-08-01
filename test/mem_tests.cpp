@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 TEST(Memory, CheckAllocation) {
-	scm_init_mem();
+	scm_init();
 	
 	Expr* i = scm_mk_int(42);
 	EXPECT_TRUE(scm_is_atom(i));
@@ -36,11 +36,11 @@ TEST(Memory, CheckAllocation) {
 	EXPECT_EQ(scm_car(p), i);
 	EXPECT_EQ(scm_cdr(p), r);
 
-	scm_gc();
+	scm_reset();
 }
 
 TEST(Memory, CheckCorruption) {
-	scm_init_mem();
+	scm_init();
 	
 	Expr* es[500];
 	for(int i=0; i<500; i++) {
@@ -55,5 +55,5 @@ TEST(Memory, CheckCorruption) {
 		EXPECT_EQ(i, scm_ival(es[i]));
 	}
 	
-	scm_gc();
+	scm_reset();
 }

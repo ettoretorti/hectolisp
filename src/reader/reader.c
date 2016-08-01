@@ -9,12 +9,12 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 	
-	scm_init_mem();
+	scm_init();
 	Expr* e = scm_read(argv[1]);
 	char* s = scm_print(e);
 	printf("%s\n", s);
 	free(s);
-	scm_gc();
+	scm_reset();
 
 	return 0;
 }
