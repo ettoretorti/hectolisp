@@ -1,4 +1,5 @@
 #include "Scheme.h"
+#include "SchemeSecret.h"
 #include <stddef.h>
 #include <ctype.h>
 #include <string.h>
@@ -245,6 +246,12 @@ static Expr* reade(Buffer* b) {
 			c == 'f'  ? FALSE :
 			c == '\\' ? read_char(b) :
 			            &AFTER_HASH;
+	} else if(cur == '\'') {
+		b_get(b);
+		final = reade(b);
+		if(!scm_is_error(final)) {
+			final = scm_mk_pair(QUOTE, scm_mk_pair(final, EMPTY_LIST));
+		}
 	} else if(!is_bound(cur) && !isdigit(cur)) {
 		final = read_symbol(b);
 	} else if(cur == ')') {
