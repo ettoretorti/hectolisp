@@ -66,6 +66,10 @@ bool scm_is_true(const Expr* e) {
 	assert(e);
 	return e != FALSE;
 }
+bool scm_is_false(const Expr* e) {
+	assert(e);
+	return e == FALSE;
+}
 bool scm_is_list(const Expr* e) {
 	assert(e);
 	while(scm_is_pair(e) && e != EMPTY_LIST) {

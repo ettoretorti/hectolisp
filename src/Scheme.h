@@ -54,6 +54,7 @@ bool scm_is_error(const Expr* e);
 bool scm_is_ffunc(const Expr* e);
 
 bool scm_is_true(const Expr* e);
+bool scm_is_false(const Expr* e);
 bool scm_is_list(const Expr* e);
 
 
