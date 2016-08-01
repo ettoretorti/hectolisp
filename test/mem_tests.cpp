@@ -45,6 +45,19 @@ TEST(Memory, SymbolUniqueness) {
 	Expr* fst = scm_mk_symbol("symbol");
 	Expr* snd = scm_mk_symbol("symbol");
 	EXPECT_EQ(fst, snd);
+	
+	Expr* ascii[128];
+	char buf[2] = { 0 };
+
+	for(int i = 0; i < 128; i++) {
+		buf[0] = (char) i;
+		ascii[i] = scm_mk_symbol(buf);
+	}
+
+	for(int i = 0; i < 128; i++) {
+		buf[0] = (char) i;
+		EXPECT_EQ(scm_mk_symbol(buf), ascii[i]);
+	}
 
 	scm_reset();
 }
