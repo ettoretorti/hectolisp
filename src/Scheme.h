@@ -64,9 +64,20 @@ char      scm_cval(const Expr* e);
 char*     scm_sval(const Expr* e);
 bool      scm_bval(const Expr* e);
 ffunc     scm_ffval(const Expr* e);
-Expr*     scm_car(Expr* e);
-Expr*     scm_cdr(Expr* e);
-
+Expr*     scm_car(const Expr* e);
+Expr*     scm_cdr(const Expr* e);
+#define scm_caar(e)   scm_car(scm_car(e))
+#define scm_cadr(e)   scm_car(scm_cdr(e))
+#define scm_cdar(e)   scm_cdr(scm_car(e))
+#define scm_cddr(e)   scm_cdr(scm_cdr(e))
+#define scm_caaar(e)  scm_car(scm_car(scm_car(e)))
+#define scm_caadr(e)  scm_car(scm_car(scm_cdr(e)))
+#define scm_cadar(e)  scm_car(scm_cdr(scm_car(e)))
+#define scm_caddr(e)  scm_car(scm_cdr(scm_cdr(e)))
+#define scm_cdaar(e)  scm_cdr(scm_car(scm_car(e)))
+#define scm_cdadr(e)  scm_cdr(scm_car(scm_cdr(e)))
+#define scm_cddar(e)  scm_cdr(scm_cdr(scm_car(e)))
+#define scm_cdddr(e)  scm_cdr(scm_cdr(scm_cdr(e)))
 
 // EXPR_CONSTRUCTORS
 Expr* scm_mk_int(int v);
