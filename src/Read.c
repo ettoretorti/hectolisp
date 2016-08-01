@@ -25,7 +25,7 @@ typedef struct Buffer Buffer;
 static void b_eat_white(Buffer* b) {
 	size_t i = b->i;
 
-	while(b->s[i] != '\0' && isspace(b->s[i])) {
+	while(i < b->n && isspace(b->s[i])) {
 		i++;
 	}
 	b->i = i;
@@ -48,19 +48,19 @@ static inline bool is_bound(char c) {
 static void b_eat_til_bound(Buffer* b) {
 	size_t i = b->i;
 
-	while(!is_bound(b->s[i])) {
+	while(i <= b->n && !is_bound(b->s[i])) {
 		i++;
 	}
 	b->i = i;
 }
 
 static inline char b_get(Buffer* b) {
-	if(b->i < b->n) return b->s[b->i++];
+	if(b->i <= b->n) return b->s[b->i++];
 	else            return '\0';
 }
 
 static inline char b_peek(const Buffer* b) {
-	if(b->i < b->n) return b->s[b->i];
+	if(b->i <= b->n) return b->s[b->i];
 	else            return '\0';
 }
 
@@ -168,7 +168,7 @@ static Expr* read_num(Buffer* b, int sign) {
 		}
 	}
 	
-	return postDec ? scm_mk_real(buf * sign) : scm_mk_int(lbuf * sign);;
+	return postDec ? scm_mk_real(buf * sign) : scm_mk_int(lbuf * sign);
 }
 
 static Expr* reade(Buffer* b);
