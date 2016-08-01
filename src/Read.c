@@ -12,6 +12,9 @@ static Expr UNEXPECTED_RPAREN = { .tag = ATOM, .atom = { .type = ERROR, .sval = 
 static Expr EOI = { .tag = ATOM, .atom = { .type = ERROR, .sval = "End of input" }, .mark = true, .protect = true };
 static Expr UNKNOWN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Unknown error" }, .mark = true, .protect = true };
 
+//for reading strings and symbols, max size is 10kb
+static char buf[10240];
+
 struct Buffer {
 	const char* const s;
 	size_t i;
@@ -85,8 +88,6 @@ static Expr* read_string(Buffer* b) {
 	char c = b_get(b);
 	assert(c == '"');
 
-	//max string length is 10kb
-	char buf[10240];
 	size_t idx = 0;
 
 	while(true) {
@@ -115,7 +116,6 @@ static Expr* read_string(Buffer* b) {
 }
 
 static Expr* read_symbol(Buffer* b) {
-	char buf[10240];
 	size_t idx = 0;
 
 	while(true) {
