@@ -128,7 +128,6 @@ Expr* scm_mk_int(int v) {
 		toRet->tag = ATOM;
 		toRet->atom.type = INT;
 		toRet->atom.ival = v;
-		return toRet;
 	}
 	return toRet;
 }
@@ -152,23 +151,19 @@ Expr* scm_mk_char(char v) {
 		toRet->tag = ATOM;
 		toRet->atom.type = CHAR;
 		toRet->atom.cval = v;
-		return toRet;
 	}
-	return NULL;
+	return toRet;
 }
 
 Expr* scm_mk_string(const char* v) {
-	assert(v);
-
 	Expr* toRet = NULL;
 	
 	if(toRet = scm_alloc()) {
 		toRet->tag = ATOM;
 		toRet->atom.type = STRING;
 		toRet->atom.sval = strdup(v);
-		return toRet;
 	}
-	return NULL;
+	return toRet;
 }
 
 Expr* scm_mk_symbol(const char* v) {
