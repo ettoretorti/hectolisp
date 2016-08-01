@@ -82,7 +82,8 @@ static Expr* read_char(Buffer* b) {
 		c = ' ';
 	}
 
-	return scm_mk_char(c);
+	Expr* toRet = scm_mk_char(c);
+	return toRet ? toRet : OOM;
 }
 
 static Expr* read_string(Buffer* b) {
@@ -112,8 +113,9 @@ static Expr* read_string(Buffer* b) {
 
 		buf[idx++] = c;
 	}
-
-	return scm_mk_string(buf);
+	
+	Expr* toRet = scm_mk_string(buf);
+	return toRet ? toRet : OOM;
 }
 
 static Expr* read_symbol(Buffer* b) {
@@ -127,7 +129,8 @@ static Expr* read_symbol(Buffer* b) {
 		if(is_bound(c)) {
 			b_unget(b);
 			buf[idx] = '\0';
-			return scm_mk_symbol(buf);
+			Expr* toRet = scm_mk_symbol(buf);
+			return toRet ? toRet : OOM;
 		}
 
 		buf[idx++] = c;
@@ -168,8 +171,9 @@ static Expr* read_num(Buffer* b, int sign) {
 			buf += ((double) c - '0') * nDecimals;
 		}
 	}
-	
-	return postDec ? scm_mk_real(buf * sign) : scm_mk_int(lbuf * sign);
+
+	Expr* toRet = postDec ? scm_mk_real(buf * sign) : scm_mk_int(lbuf * sign);
+	return toRet ? toRet : OOM;
 }
 
 static Expr* reade(Buffer* b);
