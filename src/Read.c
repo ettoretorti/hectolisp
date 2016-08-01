@@ -4,6 +4,14 @@
 #include <string.h>
 #include <assert.h>
 
+static Expr EOI_STRING = { .tag = ATOM, .atom = { .type = ERROR, .sval = "End of input before closing \" in string" }, .mark = true, .protect = true };
+static Expr NON_DIGIT = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Found non digit character in number" }, .mark = true, .protect = true };
+static Expr EXPECTED_RPAREN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Couldn't find expected closing ) for list" }, .mark = true, .protect = true };
+static Expr AFTER_HASH = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Didn't find expected boolean or character after #" }, .mark = true, .protect = true };
+static Expr UNEXPECTED_RPAREN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Unexpected ')'" }, .mark = true, .protect = true };
+static Expr EOI = { .tag = ATOM, .atom = { .type = ERROR, .sval = "End of input" }, .mark = true, .protect = true };
+static Expr UNKNOWN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Unknown error" }, .mark = true, .protect = true };
+
 struct Buffer {
 	const char* const s;
 	size_t i;
@@ -85,7 +93,7 @@ static Expr* read_string(Buffer* b) {
 		assert(idx < 10240);
 
 		c = b_get(b);
-		if(c == '\0') return scm_mk_error("End of input before closing \" in string");
+		if(c == '\0') return &EOI_STRING;
 		if(c == '"') {
 			buf[idx] = '\0';
 			break;
@@ -93,7 +101,7 @@ static Expr* read_string(Buffer* b) {
 
 		if(c == '\\') {
 			c = b_get(b);
-			if(c == '\0') return scm_mk_error("End of input before closing \" in string");
+			if(c == '\0') return &EOI_STRING;
 
 			c = c == 'n' ? '\n' :
 			    c == 't' ? '\t' :
@@ -145,8 +153,7 @@ static Expr* read_num(Buffer* b, int sign) {
 		}
 
 		if(!isdigit(c)) {
-			b_eat_til_bound(b);
-			return scm_mk_error("Found non digit character in number");
+			return &NON_DIGIT;
 		}
 
 		if(!postDec) {
@@ -190,8 +197,7 @@ Expr* reade_list(Buffer* b) {
 			car->pair.cdr = reade(b);
 			b_eat_white(b);
 			if(b_get(b) != ')') {
-				b_eat_til_bound(b);
-				return scm_mk_error("Couldn't find expected closing ) for list");
+				return &EXPECTED_RPAREN;
 			}
 			break;
 		} else if(b_peek(b) == ')') {
@@ -238,15 +244,15 @@ static Expr* reade(Buffer* b) {
 		final = c == 't'  ? TRUE :
 			c == 'f'  ? FALSE :
 			c == '\\' ? read_char(b) :
-			            scm_mk_error("Didn't find expected boolean or character after #");
+			            &AFTER_HASH;
 	} else if(!is_bound(cur) && !isdigit(cur)) {
 		final = read_symbol(b);
 	} else if(cur == ')') {
-		final = scm_mk_error("Unexpected ')'");
+		final = &UNEXPECTED_RPAREN;
 	} else if(cur == '\0') {
-		final = scm_mk_error("End of input");
+		final = &EOI;
 	} else {
-		final = scm_mk_error("Unknown error");
+		final = &UNKNOWN;
 	}
 
 	return final;
