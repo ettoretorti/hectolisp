@@ -35,15 +35,10 @@ struct __attribute__((packed)) Expr {
 };
 
 
-// SCECIAL FORMS
+// GLOBALS
 extern Expr* EMPTY_LIST;
 extern Expr* TRUE;
 extern Expr* FALSE;
-
-extern Expr* DEFINE;
-extern Expr* SET;
-extern Expr* IF;
-
 
 // EXPR PREDICATES
 bool scm_is_atom(const Expr* e);
