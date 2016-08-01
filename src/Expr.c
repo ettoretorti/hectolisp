@@ -12,14 +12,15 @@ Expr* TRUE = &_TRUE;
 static Expr _FALSE = { .tag = ATOM, .atom = { .type = BOOL, .bval = false }, .protect = true, .mark = true };
 Expr* FALSE = &_FALSE;
 
-static Expr _DEFINE = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "DEFINE" }, .protect = true, .mark = true };
-Expr* DEFINE = &_DEFINE;
+static Expr _OOM = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Out of memory" }, .protect = true, .mark = true };
+Expr* OOM = &_OOM;
 
-static Expr _SET = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "SET!" }, .protect = true, .mark = true };
-Expr* SET = &_SET;
+Expr* DEFINE = NULL;
+Expr* SET = NULL;
+Expr* IF = NULL;
+Expr* LAMBDA = NULL;
+Expr* QUOTE = NULL;
 
-static Expr _IF = { .tag = ATOM, .atom = { .type = SYMBOL, .sval = "IF" }, .protect = true, .mark = true };
-Expr* IF = &_IF;
 
 bool scm_is_atom(const Expr* e) {
 	assert(e);
@@ -171,15 +172,7 @@ Expr* scm_mk_string(const char* v) {
 }
 
 Expr* scm_mk_symbol(const char* v) {
-	assert(v);
-
-	Expr* toRet = NULL;
-	
-	if(toRet = scm_mk_string(v)) {
-		toRet->atom.type = SYMBOL;
-		return toRet;
-	}
-	return NULL;
+	return scm_get_symbol(v);
 }
 
 Expr* scm_mk_error(const char* v) {
@@ -207,4 +200,20 @@ Expr* scm_mk_pair(Expr* car, Expr* cdr) {
 		return toRet;
 	}
 	return NULL;
+}
+
+void scm_init_expr() {
+	DEFINE = scm_get_symbol("define");
+	SET = scm_get_symbol("set!");
+	IF = scm_get_symbol("if");
+	LAMBDA = scm_get_symbol("lambda");
+	QUOTE = scm_get_symbol("quote");
+}
+
+void scm_reset_expr() {
+	DEFINE = NULL;
+	SET = NULL;
+	IF = NULL;
+	LAMBDA = NULL;
+	QUOTE = NULL;
 }
