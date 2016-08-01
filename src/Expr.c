@@ -109,12 +109,12 @@ ffunc scm_ffval(const Expr* e) {
 	return e->atom.ffptr;
 }
 
-Expr* scm_car(Expr* e) {
+Expr* scm_car(const Expr* e) {
 	assert(e);
 	assert(e->tag == PAIR);
 	return e->pair.car;
 }
-Expr* scm_cdr(Expr* e) {
+Expr* scm_cdr(const Expr* e) {
 	assert(e);
 	assert(e->tag == PAIR);
 	return e->pair.cdr;
