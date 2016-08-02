@@ -5,7 +5,7 @@
 
 TEST(Parsing, Atoms) {
 	scm_init();
-	
+
 	Expr* i = scm_read("42");
 	EXPECT_TRUE(scm_is_int(i));
 	EXPECT_EQ(42, scm_ival(i));
@@ -30,7 +30,7 @@ TEST(Parsing, Atoms) {
 	EXPECT_TRUE(scm_is_bool(t));
 	EXPECT_TRUE(scm_bval(t));
 	EXPECT_EQ(TRUE, t);
-	
+
 	Expr* f = scm_read("#f");
 	EXPECT_TRUE(scm_is_bool(f));
 	EXPECT_FALSE(scm_bval(f));
@@ -52,7 +52,7 @@ TEST(Parsing, Atoms) {
 
 TEST(Parsing, Pairs) {
 	scm_init();
-	
+
 	Expr* a = scm_read("(() . ())");
 	EXPECT_TRUE(scm_is_pair(a));
 	EXPECT_EQ(EMPTY_LIST, scm_car(a));
@@ -69,7 +69,7 @@ TEST(Parsing, Pairs) {
 	EXPECT_TRUE(scm_is_real(scm_car(c)));
 	EXPECT_EQ(42.0, scm_rval(scm_car(c)));
 	EXPECT_EQ(EMPTY_LIST, scm_cdr(c));
-	
+
 	Expr* d = scm_read("(a . b)");
 	EXPECT_TRUE(scm_is_pair(d));
 	EXPECT_TRUE(scm_is_symbol(scm_car(d)));

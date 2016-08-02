@@ -43,7 +43,7 @@ static void append(buf* b, const char* s) {
 		while(*s && (b->size < b->cap)) {
 			b->buf[b->size++] = *s++;
 		}
-		
+
 		if(*s) reallocb(b);
 		else  return;
 	}
@@ -73,7 +73,7 @@ static void print_bool(bool bval, buf* b) {
 
 static void print_char(char cval, buf* b) {
 	assert(b);
-	
+
 	char cbuf[10] = "#\\newline";
 
 	switch(cval) {
@@ -121,7 +121,7 @@ loop:   ;
 			print(cdr, b);
 		}
 	}
-	
+
 	append(b, ")");
 }
 
@@ -169,7 +169,7 @@ static void print(Expr* e, buf* b) {
 
 char* scm_print(Expr* e) {
 	buf b = { .buf = malloc(128), .cap = 128, .size = 0 };
-	
+
 	int r;
 	if(!(r = setjmp(excpt))) {
 		print(e, &b);
@@ -177,7 +177,7 @@ char* scm_print(Expr* e) {
 		free(b.buf);
 		return NULL;
 	}
-	
+
 	b.buf = realloc(b.buf, b.size+1);
 	b.buf[b.size] = '\0';
 

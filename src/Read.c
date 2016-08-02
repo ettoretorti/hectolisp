@@ -83,7 +83,7 @@ static inline void b_unget(Buffer* b) {
 static Expr* read_char(Buffer* b) {
 	char c = b_get(b);
 	char p = b_peek(b);
-	
+
 	if(c == 'n' && p == 'e') {
 		b_eat_til_bound(b);
 		c = '\n';
@@ -123,7 +123,7 @@ static Expr* read_string(Buffer* b) {
 
 		buf[idx++] = c;
 	}
-	
+
 	Expr* toRet = scm_mk_string(buf);
 	return toRet ? toRet : OOM;
 }
@@ -133,7 +133,7 @@ static Expr* read_symbol(Buffer* b) {
 
 	while(true) {
 		assert(idx < 10240);
-		
+
 		char c = b_get(b);
 
 		if(is_bound(c)) {
@@ -160,7 +160,7 @@ static Expr* read_num(Buffer* b, int sign) {
 			b_unget(b);
 			break;
 		}
-		
+
 		if(c == '.') {
 			postDec = true;
 			continue;
@@ -255,7 +255,7 @@ static Expr* reade(Buffer* b) {
 	} else if(cur == '#') {
 		b_get(b);
 		char c = b_get(b);
-		
+
 		final = c == 't'  ? TRUE :
 			c == 'f'  ? FALSE :
 			c == '\\' ? read_char(b) :

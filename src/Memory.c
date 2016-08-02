@@ -55,7 +55,7 @@ static Expr* dll_insert(Expr* node, Expr* list) {
 		node->pair.car = node->pair.cdr = NULL;
 		return node;
 	}
-	
+
 	//1 element
 	if(!list->pair.car) {
 		assert(!list->pair.cdr);
@@ -76,7 +76,7 @@ static Expr* dll_insert(Expr* node, Expr* list) {
 
 static Expr* dll_remove(Expr* node) {
 	assert(node);
-	
+
 	Expr* new = node->pair.cdr;
 
 	//1 element
@@ -98,7 +98,7 @@ static Expr* dll_remove(Expr* node) {
 Expr* scm_alloc() {
 	if(!freeList) scm_gc();
 	if(!freeList) return NULL;
-	
+
 	Expr* toRet = freeList;
 	freeList = dll_remove(toRet);
 
@@ -116,9 +116,9 @@ static void cleanup(Expr* e) {
 
 static void mark(Expr* e) {
 	assert(e);
-	
+
 	if(e->mark) return;
-	
+
 	e->mark = true;
 	if(scm_is_pair(e)) {
 		mark(scm_car(e));

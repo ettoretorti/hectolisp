@@ -161,7 +161,7 @@ Expr* scm_mk_char(char v) {
 
 Expr* scm_mk_string(const char* v) {
 	Expr* toRet = scm_alloc();
-	
+
 	if(toRet) {
 		toRet->tag = ATOM;
 		toRet->atom.type = STRING;
@@ -176,7 +176,7 @@ Expr* scm_mk_symbol(const char* v) {
 
 Expr* scm_mk_error(const char* v) {
 	Expr* toRet = scm_mk_string(v);
-	
+
 	if(toRet) {
 		toRet->atom.type = ERROR;
 	}
@@ -188,7 +188,7 @@ Expr* scm_mk_pair(Expr* car, Expr* cdr) {
 	assert(cdr);
 
 	Expr* toRet = scm_alloc();
-	
+
 	if(toRet) {
 		toRet->tag = PAIR;
 		toRet->pair.car = car;

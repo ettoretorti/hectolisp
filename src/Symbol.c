@@ -135,7 +135,7 @@ static AVL* avl_insert(AVL* avl, const char* key, Expr** res) {
 			avl = avl_rl(avl);
 		}
 	}
-	
+
 	short lh = h(avl->l);
 	short rh = h(avl->r);
 

@@ -5,7 +5,7 @@
 
 TEST(Memory, CheckAllocation) {
 	scm_init();
-	
+
 	Expr* i = scm_mk_int(42);
 	EXPECT_TRUE(scm_is_atom(i));
 	EXPECT_TRUE(scm_is_int(i));
@@ -45,7 +45,7 @@ TEST(Memory, SymbolUniqueness) {
 	Expr* fst = scm_mk_symbol("symbol");
 	Expr* snd = scm_mk_symbol("symbol");
 	EXPECT_EQ(fst, snd);
-	
+
 	Expr* ascii[128];
 	char buf[2] = { 0 };
 
@@ -64,19 +64,19 @@ TEST(Memory, SymbolUniqueness) {
 
 TEST(Memory, CheckCorruption) {
 	scm_init();
-	
+
 	Expr* es[500];
 	for(int i=0; i<500; i++) {
 		es[i] = scm_mk_int(i);
 		EXPECT_TRUE(scm_is_int(es[i]));
 		EXPECT_EQ(i, scm_ival(es[i]));
 	}
-	
+
 	//check for corruption of older allocations by more recent ones
 	for(int i=0; i<500; i++) {
 		EXPECT_TRUE(scm_is_int(es[i]));
 		EXPECT_EQ(i, scm_ival(es[i]));
 	}
-	
+
 	scm_reset();
 }
