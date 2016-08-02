@@ -60,6 +60,41 @@ begin:
 			}
 
 			return last;
+		} else if(is_tpair(e, COND)) {
+			e = scm_cdr(e);
+
+			while(scm_is_pair(e)) {
+				Expr* clause = scm_car(e);
+
+				if(!scm_is_pair(clause) || !scm_is_pair(scm_cdr(clause))) {
+					return scm_mk_error("Malformed cond clause");
+				}
+
+				Expr* predicate = scm_car(clause);
+
+				bool go = predicate == ELSE;
+				if(!go) {
+					Expr* predEvaled = scm_eval(predicate);
+					if(scm_is_error(predEvaled)) {
+						return predEvaled;
+					}
+
+					go = scm_is_true(predEvaled);
+				}
+
+				if(go) {
+					e = scm_mk_pair(BEGIN, scm_cdr(clause));
+					goto begin;
+				}
+
+				e = scm_cdr(e);
+			}
+
+			if(e != EMPTY_LIST) {
+				return scm_mk_error("sequence of clauses in cond isn't a proper list");
+			}
+
+			return EMPTY_LIST;
 		}
 
 		return scm_mk_error("Can't evaluate pairs (yet)");
