@@ -24,6 +24,7 @@ Expr* SET = NULL;
 Expr* IF = NULL;
 Expr* LAMBDA = NULL;
 Expr* QUOTE = NULL;
+Expr* BEGIN = NULL;
 
 
 bool scm_is_atom(const Expr* e) {
@@ -204,6 +205,7 @@ void scm_init_expr() {
 	IF = scm_get_symbol("if");
 	LAMBDA = scm_get_symbol("lambda");
 	QUOTE = scm_get_symbol("quote");
+	BEGIN = scm_get_symbol("begin");
 }
 
 void scm_reset_expr() {
@@ -212,4 +214,5 @@ void scm_reset_expr() {
 	IF = NULL;
 	LAMBDA = NULL;
 	QUOTE = NULL;
+	BEGIN = NULL;
 }

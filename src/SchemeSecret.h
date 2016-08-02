@@ -12,6 +12,7 @@ extern Expr* SET;
 extern Expr* IF;
 extern Expr* LAMBDA;
 extern Expr* QUOTE;
+extern Expr* BEGIN;
 
 //Error Messages
 extern Expr* OOM;

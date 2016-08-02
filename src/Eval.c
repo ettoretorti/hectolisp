@@ -46,6 +46,20 @@ begin:
 
 			error:
 				return scm_mk_error("Incorrect number of args to if (expected 3)");
+		} else if(is_tpair(e, BEGIN)) {
+			e = scm_cdr(e);
+			
+			Expr* last = EMPTY_LIST;
+			while(scm_is_pair(e)) {
+				last = scm_eval(scm_car(e));
+				e = scm_cdr(e);
+			}
+			
+			if(e != EMPTY_LIST) {
+				return scm_mk_error("sequence of expressions to evaluate isn't a proper list");
+			}
+
+			return last;
 		}
 
 		return scm_mk_error("Can't evaluate pairs (yet)");
