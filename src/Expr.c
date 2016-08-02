@@ -1,3 +1,7 @@
+/* This file contains definitions of functions operating on Exprs, and
+ * definitions of the global variables in Scheme.h and SchemeSecret.h.
+ */
+
 #include "SchemeSecret.h"
 #include <stddef.h>
 #include <stdbool.h>

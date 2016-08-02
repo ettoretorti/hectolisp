@@ -1,3 +1,11 @@
+/* This file handles the memory allocation of symbols. Symbols are handled
+ * separately to ensure that any two symbols with the same "name" are
+ * represented by the same unique symbol Expr.
+ *
+ * Uniqueness is guaranteed by allocating all symbols in a set backed by an
+ * AVL tree.
+ */
+
 #include "SchemeSecret.h"
 
 #include <assert.h>

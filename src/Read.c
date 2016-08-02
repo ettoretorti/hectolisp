@@ -1,3 +1,13 @@
+/* This file implements a recursive descent parser for Exprs. It works by:
+ *   - A cstring is wrapped in a Buffer to support peeking and pushing back
+ *   - The buffer is passed to all reading functions as shared state
+ *   - The reading functions parse by consuming characters one at a time
+ *   - The reading functions can recursively call each other when necessary
+ *
+ * The parsing is aborted as soon as an error is encountered, and the error is
+ * propagated up.
+ */
+
 #include "Scheme.h"
 #include "SchemeSecret.h"
 #include <stddef.h>

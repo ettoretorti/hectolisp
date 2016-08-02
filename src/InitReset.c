@@ -1,3 +1,7 @@
+/* This file defines scm_init() and scm_reset() by aggregating all the
+ * init() and reset() functions defined in SchemeSecret.h together.
+ */
+
 #include "SchemeSecret.h"
 
 void scm_init() {

@@ -5,7 +5,7 @@
  *   - Allocating an Expr involves extracting the head of the freelist
  *   - Freeing an Expr involves inserting it back into the freelist
  *
- * Garbage collection is done by setting the mark bits of all the Exprs in the
+ * Garbage collection is done by resetting the mark bits of all the Exprs in the
  * pool, followed by doing a recursive marking of Exprs in use starting from
  * known entry points (the scheme environment) and Exprs that have their
  * protected bits set. Once this is done, all unmarked Exprs are linked

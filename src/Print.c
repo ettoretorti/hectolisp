@@ -1,3 +1,7 @@
+/* This file contains code for printing Exprs into a buffer. It uses the same
+ * principles as the parser.
+ */
+
 #include "Scheme.h"
 #include <stdbool.h>
 #include <stddef.h>
