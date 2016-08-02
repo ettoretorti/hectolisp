@@ -88,13 +88,80 @@ TEST(Parsing, Pairs) {
 	EXPECT_TRUE(scm_is_symbol(scm_cdr(f)));
 	EXPECT_STREQ("c", scm_sval(scm_cdr(f)));
 
-	Expr* g = scm_read("((a . b) . c)");
-
 	scm_reset();
 }
 
 TEST(Parsing, Lists) {
 	scm_init();
+	
+	Expr* a = scm_read("(a 1 #t)");
+	EXPECT_TRUE(scm_is_pair(a));
+	EXPECT_EQ(scm_mk_symbol("a"), scm_car(a));
+	
+	EXPECT_TRUE(scm_is_int(scm_cadr(a)));
+	EXPECT_EQ(1, scm_ival(scm_cadr(a)));
+	
+	EXPECT_TRUE(scm_is_bool(scm_caddr(a)));
+	EXPECT_EQ(TRUE, scm_caddr(a));
+
+	EXPECT_EQ(EMPTY_LIST, scm_cdddr(a));
+
+
+	Expr* b = scm_read("((a b) (c d))");
+	EXPECT_TRUE(scm_is_pair(b));
+
+	Expr* c = scm_car(b);
+	EXPECT_TRUE(scm_is_pair(c));
+	EXPECT_EQ(scm_mk_symbol("a"), scm_car(c));
+
+	EXPECT_TRUE(scm_is_pair(scm_cdr(c)));
+	EXPECT_EQ(scm_mk_symbol("b"), scm_cadr(c));
+
+	EXPECT_EQ(EMPTY_LIST, scm_cddr(c));
+
+	Expr* d = scm_cadr(b);
+	EXPECT_TRUE(scm_is_pair(d));
+	EXPECT_EQ(scm_mk_symbol("c"), scm_car(d));
+	
+	EXPECT_TRUE(scm_is_pair(scm_cdr(d)));
+	EXPECT_EQ(scm_mk_symbol("d"), scm_cadr(d));
+
+	EXPECT_EQ(EMPTY_LIST, scm_cddr(d));
+
+	EXPECT_EQ(EMPTY_LIST, scm_cddr(b));
+
+
+	Expr* e = scm_read("(())");
+	EXPECT_TRUE(scm_is_pair(e));
+	EXPECT_EQ(EMPTY_LIST, scm_car(e));
+	EXPECT_EQ(EMPTY_LIST, scm_cdr(e));
+
+	scm_reset();
+}
+
+TEST(Parsing, Quotes) {
+	scm_init();
+
+	Expr* a = scm_read("'22");
+	EXPECT_TRUE(scm_is_pair(a));
+	EXPECT_EQ(scm_car(a), scm_mk_symbol("quote"));
+	EXPECT_TRUE(scm_is_pair(scm_cdr(a)));
+	EXPECT_TRUE(scm_is_int(scm_cadr(a)));
+	EXPECT_EQ(scm_ival(scm_cadr(a)), 22);
+
+	EXPECT_EQ(scm_cddr(a), EMPTY_LIST);
+
+	Expr* b = scm_read("(quote '(quote a))");
+
+	for(int i = 0; i < 3; i++) {
+		EXPECT_TRUE(scm_is_pair(b));
+		EXPECT_EQ(scm_mk_symbol("quote"), scm_car(b));
+		EXPECT_TRUE(scm_is_pair(scm_cdr(b)));
+		EXPECT_EQ(EMPTY_LIST, scm_cddr(b));
+		b = scm_cadr(b);
+	}
+
+	EXPECT_EQ(scm_mk_symbol("a"), b);
 
 	scm_reset();
 }
