@@ -52,5 +52,11 @@ if(BUILD_TESTS)
     target_include_directories(
 	reader
         PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    
+    add_executable(evaluator "src/evaluator/evaluator.c")
+    target_link_libraries(evaluator hlisp)
+    target_include_directories(
+	evaluator
+        PRIVATE ${CMAKE_SOURCE_DIR}/src)
 endif()
 
