@@ -36,6 +36,12 @@ static inline AVL* r(AVL* avl) {
 	else     return avl->r;
 }
 
+static void updateH(AVL * avl) {
+	if(!avl) return;
+
+	avl->h = (h(l(avl)) > h(r(avl)) ? h(l(avl)) : h(r(avl))) + 1;
+}
+
 //     avl                 x
 //   a      x   -->   avl    c
 //        b   c     a     b
@@ -47,6 +53,9 @@ static AVL* avl_rl(AVL* avl) {
 
 	avl->r = b;
 	x->l = avl;
+
+	updateH(avl);
+	updateH(x);
 
 	return x;
 }
@@ -62,6 +71,9 @@ static AVL* avl_rr(AVL* avl) {
 
 	avl->l = b;
 	x->r = avl;
+	
+	updateH(avl);
+	updateH(x);
 
 	return x;
 }
