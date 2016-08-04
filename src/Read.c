@@ -284,3 +284,14 @@ Expr* scm_read(const char* in) {
 
 	return reade(&b);
 }
+
+Expr* scm_read_inc(const char* in, char** rem) {
+	Buffer b = { .s = in, .i = 0, .n = strlen(in) };
+
+	Expr* toRet = reade(&b);
+	b_eat_white(&b);
+
+	*rem = &((char*)b.s)[b.i];
+
+	return toRet;
+}

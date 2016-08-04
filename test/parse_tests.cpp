@@ -165,3 +165,21 @@ TEST(Parsing, Quotes) {
 
 	scm_reset();
 }
+
+TEST(Parsing, Incremental) {
+	scm_init();
+
+	char toRead[] = "a b c";
+	char* ptr = toRead;
+	
+	Expr* e = scm_read_inc(ptr, &ptr);
+	EXPECT_EQ(scm_mk_symbol("a"), e);
+	e = scm_read_inc(ptr, &ptr);
+	EXPECT_EQ(scm_mk_symbol("b"), e);
+	e = scm_read_inc(ptr, &ptr);
+	EXPECT_EQ(scm_mk_symbol("c"), e);
+	e = scm_read_inc(ptr, &ptr);
+	EXPECT_EQ('\0', *ptr);
+
+	scm_reset();
+}

@@ -99,6 +99,7 @@ void scm_init();
 void scm_reset();
 
 Expr* scm_read(const char* in);
+Expr* scm_read_inc(const char* in, char** rem);
 Expr* scm_eval(Expr* expr);
 char* scm_print(Expr* expr);
 
