@@ -36,7 +36,7 @@ typedef struct Buffer Buffer;
 static void b_eat_white(Buffer* b) {
 	size_t i = b->i;
 
-	while(i < b->n && isspace(b->s[i])) {
+	while(i <= b->n && isspace(b->s[i])) {
 		i++;
 	}
 	b->i = i;
