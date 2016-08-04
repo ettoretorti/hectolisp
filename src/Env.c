@@ -15,10 +15,10 @@
 Expr* BASE_ENV = NULL;
 Expr* CURRENT_ENV = NULL;
 
-static Expr* mk_env(Expr* parent) {
+static Expr* mk_env(Expr* parent, Expr* names, Expr* vals) {
 	assert(parent);
 	
-	return scm_mk_pair(parent, scm_mk_pair(EMPTY_LIST, scm_mk_pair(EMPTY_LIST, EMPTY_LIST)));
+	return scm_mk_pair(parent, scm_mk_pair(names, scm_mk_pair(vals, EMPTY_LIST)));
 }
 
 static int idxOf(Expr* sym, Expr* list) {
@@ -112,10 +112,10 @@ Expr* scm_env_set(Expr* env, Expr* sym, Expr* val) {
 	return scm_mk_error("Can't set unbound symbol");
 }
 
-void scm_env_push() {
+void scm_env_push(Expr* names, Expr* vals) {
 	assert(CURRENT_ENV);
 
-	Expr* new = mk_env(CURRENT_ENV);
+	Expr* new = mk_env(CURRENT_ENV, names, vals);
 	CURRENT_ENV = new;
 }
 
@@ -126,7 +126,7 @@ void scm_env_pop() {
 }
 
 void scm_init_env() {
-	BASE_ENV = mk_env(FALSE);
+	BASE_ENV = mk_env(FALSE, EMPTY_LIST, EMPTY_LIST);
 	CURRENT_ENV = BASE_ENV;
 }
 
