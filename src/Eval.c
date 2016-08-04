@@ -95,6 +95,28 @@ begin:
 			}
 
 			return EMPTY_LIST;
+		} else if(is_tpair(e, DEFINE)) {
+			e = scm_cdr(e);
+
+			if(!scm_is_pair(e) || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
+				return scm_mk_error("Malformed define");
+			}
+
+			Expr* name = scm_car(e);
+			Expr* val = scm_cadr(e);
+
+			return scm_env_define(CURRENT_ENV, name, val);
+		} else if(is_tpair(e, SET)) {
+			e = scm_cdr(e);
+			
+			if(!scm_is_pair(e) || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
+				return scm_mk_error("Malformed set!");
+			}
+
+			Expr* name = scm_car(e);
+			Expr* val = scm_cadr(e);
+
+			return scm_env_set(CURRENT_ENV, name, val);
 		}
 
 		return scm_mk_error("Can't evaluate pairs (yet)");
@@ -103,7 +125,7 @@ begin:
 	} else if(scm_is_ffunc(e)) {
 		return scm_mk_symbol("#(Foreign function)#");
 	} else if(scm_is_symbol(e)) {
-		return scm_mk_error("Can't evaluate symbols (yet)");
+		return scm_env_lookup(CURRENT_ENV, e);
 	} else {
 		return e;
 	}
