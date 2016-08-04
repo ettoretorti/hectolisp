@@ -98,10 +98,6 @@ static void print_pair(Expr* e, buf* b) {
 	assert(e);
 	assert(scm_is_pair(e));
 
-	if(e == EMPTY_LIST) {
-		append(b, "()");
-		return;
-	}
 
 	append(b, "(");
 
@@ -129,7 +125,10 @@ static void print(Expr* e, buf* b) {
 	assert(e);
 	assert(b);
 
-	if(scm_is_pair(e)) {
+	if(e == EMPTY_LIST) {
+		append(b, "()");
+		return;
+	} else if(scm_is_pair(e)) {
 		print_pair(e, b);
 		return;
 	}
