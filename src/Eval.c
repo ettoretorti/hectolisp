@@ -125,6 +125,48 @@ begin:
 			}
 
 			return scm_env_set(CURRENT_ENV, name, val);
+		} else if(is_tpair(e, AND)) {
+			e = scm_cdr(e);
+			
+			while(scm_is_pair(e)) {
+				Expr* v = scm_eval(scm_car(e));
+				if(scm_is_error(v)) {
+					return v;
+				}
+
+				if(scm_is_false(v)) {
+					return FALSE;
+				}
+
+				e = scm_cdr(e);
+			}
+
+			if(e != EMPTY_LIST) {
+				return scm_mk_error("arguments to and aren't a proper list");
+			}
+
+			return TRUE;
+		} else if(is_tpair(e, OR)) {
+			e = scm_cdr(e);
+			
+			while(scm_is_pair(e)) {
+				Expr* v = scm_eval(scm_car(e));
+				if(scm_is_error(v)) {
+					return v;
+				}
+
+				if(scm_is_true(v)) {
+					return TRUE;
+				}
+
+				e = scm_cdr(e);
+			}
+
+			if(e != EMPTY_LIST) {
+				return scm_mk_error("arguments to or aren't a proper list");
+			}
+
+			return FALSE;
 		}
 
 		return scm_mk_error("Can't evaluate pairs (yet)");

@@ -15,6 +15,8 @@ extern Expr* QUOTE;
 extern Expr* BEGIN;
 extern Expr* COND;
 extern Expr* ELSE;
+extern Expr* AND;
+extern Expr* OR;
 
 //Memory
 void scm_init_mem();

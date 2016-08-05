@@ -27,6 +27,8 @@ Expr* QUOTE = NULL;
 Expr* BEGIN = NULL;
 Expr* COND = NULL;
 Expr* ELSE = NULL;
+Expr* AND = NULL;
+Expr* OR = NULL;
 
 bool scm_is_atom(const Expr* e) {
 	assert(e);
@@ -209,6 +211,8 @@ void scm_init_expr() {
 	BEGIN = scm_get_symbol("begin");
 	COND = scm_get_symbol("cond");
 	ELSE = scm_get_symbol("else");
+	AND = scm_get_symbol("and");
+	OR = scm_get_symbol("or");
 }
 
 void scm_reset_expr() {
@@ -220,4 +224,6 @@ void scm_reset_expr() {
 	BEGIN = NULL;
 	COND = NULL;
 	ELSE = NULL;
+	AND = NULL;
+	OR = NULL;
 }
