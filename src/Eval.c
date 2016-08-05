@@ -103,7 +103,11 @@ begin:
 			}
 
 			Expr* name = scm_car(e);
-			Expr* val = scm_cadr(e);
+			Expr* val = scm_eval(scm_cadr(e));
+
+			if(scm_is_error(val)) {
+				return val;
+			}
 
 			return scm_env_define(CURRENT_ENV, name, val);
 		} else if(is_tpair(e, SET)) {
@@ -114,7 +118,11 @@ begin:
 			}
 
 			Expr* name = scm_car(e);
-			Expr* val = scm_cadr(e);
+			Expr* val = scm_eval(scm_cadr(e));
+			
+			if(scm_is_error(val)) {
+				return val;
+			}
 
 			return scm_env_set(CURRENT_ENV, name, val);
 		}
