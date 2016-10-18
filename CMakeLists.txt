@@ -36,14 +36,17 @@ endif()
 
 if(BUILD_TESTS)
     enable_testing()
-    find_package(GTest REQUIRED)
+    set(BUILD_GTEST true CACHE BOOL "")
+    set(BUILD_GMOCK false CACHE BOOL "")
+	add_subdirectory(deps/googletest)
     
     add_executable(alltests "test/all_tests.cpp")
-    target_link_libraries(alltests hlisp ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(alltests hlisp gtest gtest_main)
     target_include_directories(
         alltests
         PRIVATE ${CMAKE_SOURCE_DIR}/src
-        PRIVATE ${CMAKE_SOURCE_DIR}/test)
+        PRIVATE ${CMAKE_SOURCE_DIR}/test
+        PRIVATE ${gtest_SOURCE_DIR}/include)
 
     add_test(NAME alltests COMMAND alltests)
 
