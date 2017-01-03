@@ -36,6 +36,8 @@ TEST(Memory, CheckAllocation) {
 	EXPECT_EQ(scm_car(p), i);
 	EXPECT_EQ(scm_cdr(p), r);
 
+	EXPECT_FALSE(scm_is_pair(EMPTY_LIST));
+
 	scm_reset();
 }
 
