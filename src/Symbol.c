@@ -21,6 +21,14 @@ typedef struct __attribute__((packed)) AVL {
 
 static AVL* symbols = NULL;
 
+static char* strdup(const char* s) {
+	size_t len = strlen(s);
+	char* toRet = malloc(len + 1);
+	strcpy(toRet, s);
+
+	return toRet;
+}
+
 static inline short h(AVL* avl) {
 	if(!avl) return 0;
 	else     return avl->h;

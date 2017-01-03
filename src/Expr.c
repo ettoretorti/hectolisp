@@ -5,6 +5,7 @@
 #include "SchemeSecret.h"
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 static Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true, .mark = true };
@@ -160,6 +161,14 @@ Expr* scm_mk_char(char v) {
 		toRet->atom.type = CHAR;
 		toRet->atom.cval = v;
 	}
+	return toRet;
+}
+
+static char* strdup(const char* s) {
+	size_t len = strlen(s);
+	char* toRet = malloc(len + 1);
+	strcpy(toRet, s);
+
 	return toRet;
 }
 
