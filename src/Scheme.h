@@ -94,6 +94,9 @@ void scm_gc();
 void scm_protect(Expr* e);
 void scm_unprotect(Expr* e);
 
+void scm_stack_push(Expr** e);
+void scm_stack_pop(Expr** e);
+
 // GENERAL
 void scm_init();
 void scm_reset();

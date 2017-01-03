@@ -82,3 +82,33 @@ TEST(Memory, CheckCorruption) {
 
 	scm_reset();
 }
+
+TEST(Memory, StackProtect) {
+	scm_init();
+
+	Expr* e = scm_mk_int(52);
+	scm_stack_push(&e);
+
+	scm_gc();
+
+	ASSERT_TRUE(scm_is_int(e));
+	ASSERT_EQ(52, scm_ival(e));
+
+	scm_stack_pop(&e);
+	scm_reset();
+}
+
+TEST(Memory, Protect) {
+	scm_init();
+
+	Expr* e = scm_mk_char('a');
+	scm_protect(e);
+
+	scm_gc();
+
+	ASSERT_TRUE(scm_is_char(e));
+	ASSERT_EQ('a', scm_cval(e));
+
+	scm_unprotect(e);
+	scm_reset();
+}

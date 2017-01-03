@@ -22,12 +22,16 @@
 #include <assert.h>
 
 #define MEM_SIZE 5000
+#define STACK_SIZE 256
 
 //TODO: remove
 extern void free(void* ptr);
 
 static Expr pool[MEM_SIZE];
 static Expr* freeList = NULL;
+
+static Expr** protStack[STACK_SIZE];
+static size_t protStackSize = 0;
 
 void scm_init_mem() {
 	freeList = &pool[0];
@@ -136,6 +140,21 @@ void scm_unprotect(Expr* e) {
 	e->protect = false;
 }
 
+void scm_stack_push(Expr** e) {
+	assert(e);
+	assert(protStackSize < STACK_SIZE);
+
+	protStack[protStackSize++] = e;
+}
+
+void scm_stack_pop(Expr** e) {
+	assert(e);
+	assert(protStackSize > 0);
+	assert(e == protStack[protStackSize - 1]);
+
+	protStackSize--;
+}
+
 void scm_gc() {
 	freeList = NULL;
 
@@ -147,6 +166,10 @@ void scm_gc() {
 		if(pool[i].protect) {
 			mark(&pool[i]);
 		}
+	}
+
+	for(size_t i = 0; i < protStackSize; i++) {
+		mark(*protStack[i]);
 	}
 
 	//TODO actual marking
