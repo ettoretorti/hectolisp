@@ -66,7 +66,7 @@ static Expr* replace(int idx, Expr* list, Expr* val) {
 }
 
 Expr* scm_env_lookup(Expr* env, Expr* sym) {
-	assert(env); assert(sym);
+	assert(env); assert(sym); assert(scm_is_symbol(sym));
 	
 	while(env != FALSE) {
 		Expr* names = scm_cadr(env);
@@ -93,6 +93,7 @@ Expr* scm_env_define(Expr* env, Expr* sym, Expr* val) {
 
 		return val;
 	} else {
+		//TODO not sure overriding anyway is the best option...
 		return replace(idx, scm_caddr(env), val);
 	}
 }
