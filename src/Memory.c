@@ -124,7 +124,7 @@ static void mark(Expr* e) {
 	if(e->mark) return;
 
 	e->mark = true;
-	if(scm_is_pair(e)) {
+	if(scm_is_pair(e) || scm_is_closure(e)) {
 		mark(scm_car(e));
 		mark(scm_cdr(e));
 	}
