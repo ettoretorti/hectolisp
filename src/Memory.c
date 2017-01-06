@@ -22,7 +22,7 @@
 #include <assert.h>
 
 #define MEM_SIZE 5000
-#define STACK_SIZE 256
+#define STACK_SIZE 1024
 
 //TODO: remove
 extern void free(void* ptr);
