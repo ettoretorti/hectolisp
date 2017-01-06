@@ -173,8 +173,8 @@ void scm_gc() {
 	}
 
 	//TODO actual marking
-	mark(BASE_ENV);
-	mark(CURRENT_ENV);
+	if(BASE_ENV)    mark(BASE_ENV);
+	if(CURRENT_ENV) mark(CURRENT_ENV);
 
 	for(size_t i=0; i<MEM_SIZE; i++) {
 		if(!pool[i].mark && !pool[i].protect) {
