@@ -190,9 +190,9 @@ Expr* scm_mk_symbol(const char* v) {
 Expr* scm_mk_error(const char* v) {
 	Expr* toRet = scm_mk_string(v);
 
-	if(toRet) {
-		toRet->atom.type = ERROR;
-	}
+	if(toRet) toRet->atom.type = ERROR;
+	else      toRet = OOM;
+
 	return toRet;
 }
 
