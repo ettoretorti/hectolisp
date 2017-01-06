@@ -10,16 +10,8 @@
 
 #include <assert.h>
 
-#define NULL 0 
-
 Expr* BASE_ENV = NULL;
 Expr* CURRENT_ENV = NULL;
-
-static Expr* mk_env(Expr* parent, Expr* names, Expr* vals) {
-	assert(parent);
-	
-	return scm_mk_pair(parent, scm_mk_pair(names, scm_mk_pair(vals, EMPTY_LIST)));
-}
 
 static int idxOf(Expr* sym, Expr* list) {
 	assert(sym); assert(list);
@@ -113,10 +105,18 @@ Expr* scm_env_set(Expr* env, Expr* sym, Expr* val) {
 	return scm_mk_error("Can't set unbound symbol");
 }
 
+Expr* scm_mk_env(Expr* parent, Expr* names, Expr* vals) {
+	assert(parent); assert(names); assert(vals);
+
+	Expr* ll[3] = { parent, names, vals };
+	return scm_mk_list(ll, 3);
+}
+
+
 void scm_env_push(Expr* names, Expr* vals) {
 	assert(CURRENT_ENV);
 
-	Expr* new = mk_env(CURRENT_ENV, names, vals);
+	Expr* new = scm_mk_env(CURRENT_ENV, names, vals);
 	CURRENT_ENV = new;
 }
 
@@ -127,7 +127,7 @@ void scm_env_pop() {
 }
 
 void scm_init_env() {
-	BASE_ENV = mk_env(FALSE, EMPTY_LIST, EMPTY_LIST);
+	BASE_ENV = scm_mk_env(FALSE, EMPTY_LIST, EMPTY_LIST);
 	CURRENT_ENV = BASE_ENV;
 }
 

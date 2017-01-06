@@ -29,6 +29,8 @@ extern Expr* CURRENT_ENV;
 void scm_init_env();
 void scm_reset_env();
 
+Expr* scm_mk_env(Expr* parent, Expr* names, Expr* vals);
+
 void scm_env_push(Expr* names, Expr* vals);
 void scm_env_pop();
 
