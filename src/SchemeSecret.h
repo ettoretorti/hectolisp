@@ -53,6 +53,9 @@ void scm_reset_expr();
 Expr* scm_get_symbol(const char* s);
 void scm_reset_symbol_set();
 
+//Functions
+void scm_init_func();
+
 //Closures
 Expr* scm_mk_closure(Expr* penv, Expr* args, Expr* body);
 Expr* scm_closure_env(Expr* c);

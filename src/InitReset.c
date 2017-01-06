@@ -8,6 +8,7 @@ void scm_init() {
 	scm_init_mem();
 	scm_init_expr();
 	scm_init_env();
+	scm_init_func();
 }
 
 void scm_reset() {
