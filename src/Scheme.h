@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +30,7 @@ struct __attribute__((packed)) Expr {
 			struct Expr* cdr;
 		} pair;
 	};
-	enum { ATOM, PAIR } tag : 1;
+	enum { ATOM, PAIR, CLOSURE } tag : 2;
 	bool protect : 1;
 	bool mark : 1;
 };
@@ -43,6 +44,7 @@ extern Expr* FALSE;
 // EXPR PREDICATES
 bool scm_is_atom(const Expr* e);
 bool scm_is_pair(const Expr* e);
+bool scm_is_closure(const Expr* e);
 
 bool scm_is_int(const Expr* e);
 bool scm_is_real(const Expr* e);

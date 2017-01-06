@@ -2,7 +2,7 @@
  * principles as the parser.
  */
 
-#include "Scheme.h"
+#include "SchemeSecret.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <assert.h>
@@ -130,6 +130,11 @@ static void print(Expr* e, buf* b) {
 		return;
 	} else if(scm_is_pair(e)) {
 		print_pair(e, b);
+		return;
+	} else if(scm_is_closure(e)) {
+		append(b, "#CLOSURE WITH ARGS: ");
+		print(scm_closure_args(e), b);
+		append(b, "#");
 		return;
 	}
 

@@ -39,6 +39,10 @@ bool scm_is_pair(const Expr* e) {
 	assert(e);
 	return e != EMPTY_LIST && e->tag == PAIR;
 }
+bool scm_is_closure(const Expr* e) {
+	assert(e);
+	return e->tag == CLOSURE;
+}
 
 bool scm_is_int(const Expr* e) {
 	assert(e);
@@ -121,12 +125,12 @@ ffunc scm_ffval(const Expr* e) {
 
 Expr* scm_car(const Expr* e) {
 	assert(e);
-	assert(e->tag == PAIR);
+	assert(e->tag == PAIR || e->tag == CLOSURE);
 	return e->pair.car;
 }
 Expr* scm_cdr(const Expr* e) {
 	assert(e);
-	assert(e->tag == PAIR);
+	assert(e->tag == PAIR || e->tag == CLOSURE);
 	return e->pair.cdr;
 }
 
@@ -223,6 +227,36 @@ Expr* scm_mk_list(Expr** l, size_t n) {
 	scm_stack_pop(&toRet);
 
 	return toRet ? toRet : OOM;
+}
+
+Expr* scm_mk_closure(Expr* penv, Expr* args, Expr* body) {
+	assert(penv);
+	assert(args);
+	assert(body);
+
+	Expr* contents[3] = { penv, args, body };
+	Expr* res = scm_mk_list(contents, 3);
+	
+	if(!scm_is_error(res)) {
+		res->tag = CLOSURE;
+	}
+
+	return res;
+}
+
+Expr* scm_closure_env(Expr* c) {
+	assert(c); assert(scm_is_closure(c));
+	return scm_car(c);
+}
+
+Expr* scm_closure_args(Expr* c) {
+	assert(c); assert(scm_is_closure(c));
+	return scm_cadr(c);
+}
+
+Expr* scm_closure_body(Expr* c) {
+	assert(c); assert(scm_is_closure(c));
+	return scm_caddr(c);
 }
 
 void scm_init_expr() {
