@@ -89,6 +89,9 @@ Expr* scm_mk_symbol(const char* v);
 Expr* scm_mk_error(const char* v);
 Expr* scm_mk_pair(Expr* car, Expr* cdr);
 
+// ADVANCED CONSTRUCTORS
+Expr* scm_mk_list(Expr** l, size_t n);
+
 // MEMORY MANAGEMENT
 void scm_gc();
 void scm_protect(Expr* e);

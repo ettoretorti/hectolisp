@@ -211,6 +211,20 @@ Expr* scm_mk_pair(Expr* car, Expr* cdr) {
 	return NULL;
 }
 
+Expr* scm_mk_list(Expr** l, size_t n) {
+	Expr* toRet = EMPTY_LIST;
+	scm_stack_push(&toRet);
+
+	while(toRet && n != 0) {
+		toRet = scm_mk_pair(l[n - 1], toRet);
+		n--;
+	}
+
+	scm_stack_pop(&toRet);
+
+	return toRet ? toRet : OOM;
+}
+
 void scm_init_expr() {
 	DEFINE = scm_get_symbol("define");
 	SET = scm_get_symbol("set!");
