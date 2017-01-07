@@ -176,3 +176,14 @@ TEST(Eval, If) {
 
 	scm_reset();
 }
+
+TEST(Eval, TailRec) {
+	scm_init();
+	char* s;
+
+	s = scm_print(scm_eval(scm_read("(begin (define tst (lambda (x) (if (= x 0) 0 (tst (+ x -1))))) (tst 2048))")));
+	EXPECT_STREQ("0", s);
+	free(s);
+
+	scm_reset();
+}
