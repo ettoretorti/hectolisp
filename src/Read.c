@@ -15,13 +15,15 @@
 #include <string.h>
 #include <assert.h>
 
-static Expr EOI_STRING = { .tag = ATOM, .atom = { .type = ERROR, .sval = "End of input before closing \" in string" }, .mark = true, .protect = true };
-static Expr NON_DIGIT = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Found non digit character in number" }, .mark = true, .protect = true };
-static Expr EXPECTED_RPAREN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Couldn't find expected closing ) for list" }, .mark = true, .protect = true };
-static Expr AFTER_HASH = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Didn't find expected boolean or character after #" }, .mark = true, .protect = true };
-static Expr UNEXPECTED_RPAREN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Unexpected ')'" }, .mark = true, .protect = true };
-static Expr EOI = { .tag = ATOM, .atom = { .type = ERROR, .sval = "End of input" }, .mark = true, .protect = true };
-static Expr UNKNOWN = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Unknown error" }, .mark = true, .protect = true };
+#define mk_err(name, msg) static Expr name = { .tag = ATOM, .atom = { .type = ERROR, .sval = msg }, .mark = true, .protect = true }
+
+mk_err(EOI_STRING, "End of input before closing \" in string");
+mk_err(NON_DIGIT, "Found non digit character in number");
+mk_err(EXPECTED_RPAREN, "Couldn't find expected closing ) for list");
+mk_err(AFTER_HASH, "Didn't find expected boolean or character after #");
+mk_err(UNEXPECTED_RPAREN, "Unexpected ')'");
+mk_err(EOI, "End of input");
+mk_err(UNKNOWN, "Unknown error");
 
 //for reading strings and symbols, max size is 10kb
 static char buf[10240];
@@ -199,11 +201,20 @@ Expr* reade_list(Buffer* b) {
 		b_get(b);
 		return EMPTY_LIST;
 	}
-
+	
 	Expr* read = reade(b);
 	if(scm_is_error(read)) return read;
+	scm_stack_push(&read);
+
 	Expr* car = scm_mk_pair(read, EMPTY_LIST);
 	Expr* toRet = car;
+	scm_stack_push(&toRet);
+
+	if(!toRet) {
+		scm_stack_pop(&toRet);
+		scm_stack_pop(&read);
+		return OOM;
+	}
 
 	while(true) {
 		b_eat_white(b);
@@ -212,21 +223,31 @@ Expr* reade_list(Buffer* b) {
 			car->pair.cdr = reade(b);
 			b_eat_white(b);
 			if(b_get(b) != ')') {
+				scm_stack_pop(&toRet);
+				scm_stack_pop(&read);
 				return &EXPECTED_RPAREN;
 			}
 			break;
 		} else if(b_peek(b) == ')') {
 			b_get(b);
+			scm_stack_pop(&toRet);
+			scm_stack_pop(&read);
 			return toRet;
 		} else {
 			read = reade(b);
-			if(scm_is_error(read)) return read;
+			if(scm_is_error(read)) {
+				scm_stack_pop(&toRet);
+				scm_stack_pop(&read);
+				return read;
+			}
 			Expr* ncdr = scm_mk_pair(read, EMPTY_LIST);
 			car->pair.cdr = ncdr;
 			car = ncdr;
 		}
 	}
 
+	scm_stack_pop(&toRet);
+	scm_stack_pop(&read);
 	return toRet;
 }
 
@@ -264,7 +285,10 @@ static Expr* reade(Buffer* b) {
 		b_get(b);
 		final = reade(b);
 		if(!scm_is_error(final)) {
-			final = scm_mk_pair(QUOTE, scm_mk_pair(final, EMPTY_LIST));
+			scm_stack_push(&final);
+			Expr* ll[2] = { QUOTE, final };
+			final = scm_mk_list(ll, 2);;
+			scm_stack_pop(&final);
 		}
 	} else if(!is_bound(cur) && !isdigit(cur)) {
 		final = read_symbol(b);
@@ -275,7 +299,7 @@ static Expr* reade(Buffer* b) {
 	} else {
 		final = &UNKNOWN;
 	}
-
+	
 	return final;
 }
 
