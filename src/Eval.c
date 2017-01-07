@@ -71,13 +71,23 @@ static Expr* save_eval_all(Expr* es) {
 	return head;
 }
 
+#undef error_circuit
+
+
+// needs modification to deal with the tailcall cleanup
+#define error_circuit(expr) \
+	{ Expr* TmP = expr; \
+	  if(scm_is_error(TmP)) { scm_stack_pop(&e); return TmP; } }
+
 Expr* scm_eval(Expr* e) {
+	scm_stack_push(&e);
 //just a tail call
 begin:
 	assert(e);
 
 	if(scm_is_pair(e)) {
 		if(is_tpair(e, QUOTE)) {
+			scm_stack_pop(&e);
 			return scm_cadr(e);
 		} else if(is_tpair(e, IF)) {
 			//(if predicate consequent alternative)
@@ -107,6 +117,7 @@ begin:
 			goto begin;
 
 			error:
+				scm_stack_pop(&e);
 				return scm_mk_error("Incorrect number of args to if (expected 3)");
 		} else if(is_tpair(e, BEGIN)) {
 			e = scm_cdr(e);
@@ -119,6 +130,7 @@ begin:
 			}
 			
 			if(!scm_is_pair(e) || scm_cdr(e) != EMPTY_LIST) {
+				scm_stack_pop(&e);
 				return scm_mk_error("sequence of expressions to evaluate isn't a proper list");
 			}
 
@@ -131,6 +143,7 @@ begin:
 				Expr* clause = scm_car(e);
 
 				if(!scm_is_pair(clause) || !scm_is_pair(scm_cdr(clause))) {
+					scm_stack_pop(&e);
 					return scm_mk_error("Malformed cond clause");
 				}
 
@@ -146,7 +159,10 @@ begin:
 
 				if(go) {
 					e = scm_mk_pair(BEGIN, scm_cdr(clause));
-					if(!e) return OOM;
+					if(!e) {
+						scm_stack_pop(&e);
+						return OOM;
+					}
 					goto begin;
 				}
 
@@ -154,15 +170,18 @@ begin:
 			}
 
 			if(e != EMPTY_LIST) {
+				scm_stack_pop(&e);
 				return scm_mk_error("sequence of clauses in cond isn't a proper list");
 			}
 
 			//no matching clause in cond is unspecified
+			scm_stack_pop(&e);
 			return EMPTY_LIST;
 		} else if(is_tpair(e, DEFINE)) {
 			e = scm_cdr(e);
 
 			if(!scm_is_pair(e) || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
+				scm_stack_pop(&e);
 				return scm_mk_error("Malformed define");
 			}
 
@@ -174,11 +193,13 @@ begin:
 			Expr* res = scm_env_define(CURRENT_ENV, name, val);
 			scm_stack_pop(&val);
 
+			scm_stack_pop(&e);
 			return res;
 		} else if(is_tpair(e, SET)) {
 			e = scm_cdr(e);
 			
 			if(!scm_is_pair(e) || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
+				scm_stack_pop(&e);
 				return scm_mk_error("Malformed set!");
 			}
 
@@ -190,16 +211,21 @@ begin:
 			Expr* res = scm_env_set(CURRENT_ENV, name, val);
 			scm_stack_pop(&val);
 
+			scm_stack_pop(&e);
 			return res;
 		} else if(is_tpair(e, AND)) {
 			e = scm_cdr(e);
-			if(e == EMPTY_LIST) return TRUE;
+			if(e == EMPTY_LIST) {
+				scm_stack_pop(&e);
+				return TRUE;
+			}
 			
 			while(!is_last(e)) {
 				Expr* v = save_eval(scm_car(e));
 				error_circuit(v);
 
 				if(scm_is_false(v)) {
+					scm_stack_pop(&e);
 					return FALSE;
 				}
 
@@ -207,6 +233,7 @@ begin:
 			}
 
 			if(!scm_is_pair(e) || scm_cdr(e) != EMPTY_LIST) {
+				scm_stack_pop(&e);
 				return scm_mk_error("arguments to and aren't a proper list");
 			}
 			
@@ -214,13 +241,17 @@ begin:
 			goto begin;
 		} else if(is_tpair(e, OR)) {
 			e = scm_cdr(e);
-			if(e == EMPTY_LIST) return FALSE;
+			if(e == EMPTY_LIST) {
+				scm_stack_pop(&e);
+				return FALSE;
+			}
 			
 			while(!is_last(e)) {
 				Expr* v = save_eval(scm_car(e));
 				error_circuit(v);
 
 				if(scm_is_true(v)) {
+					scm_stack_pop(&e);
 					return v;
 				}
 
@@ -228,6 +259,7 @@ begin:
 			}
 
 			if(!scm_is_pair(e) || scm_cdr(e) != EMPTY_LIST) {
+				scm_stack_pop(&e);
 				return scm_mk_error("arguments to or aren't a proper list");
 			}
 			
@@ -237,27 +269,48 @@ begin:
 			// (lambda (the arg list) body)
 			e = scm_cdr(e);
 			
-			if(!scm_is_pair(e)) return scm_mk_error("missing argument list to lambda");
+			if(!scm_is_pair(e)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("missing argument list to lambda");
+			}
 
 			Expr* args = scm_car(e);
-			if(!scm_is_pair(args) && args != EMPTY_LIST) return scm_mk_error("lambda arguments aren't in a list");
+			if(!scm_is_pair(args) && args != EMPTY_LIST) {
+				scm_stack_pop(&e);
+				return scm_mk_error("lambda arguments aren't in a list");
+			}
 
 			Expr* body = scm_cdr(e);
-			if(!scm_is_pair(body)) return scm_mk_error("lambda body is not a list");
+			if(!scm_is_pair(body)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("lambda body is not a list");
+			}
 
+			scm_stack_pop(&e);
 			return scm_mk_closure(CURRENT_ENV, args, body);
 		} else {
 			//TODO GC safety
 			Expr* func = save_eval(scm_car(e));
 			error_circuit(func);
+			scm_stack_push(&func);
+
 			Expr* args = save_eval_all(scm_cdr(e));
 			error_circuit(args);
+			scm_stack_push(&args);
 
 			if(scm_is_ffunc(func)) {
-				return scm_ffval(func)(args);
+				Expr* toRet = scm_ffval(func)(args);
+				scm_stack_pop(&args);
+				scm_stack_pop(&func);
+
+				scm_stack_pop(&e);
+				return toRet;
 			}
 			
-			if(!scm_is_closure(func)) return scm_mk_error("can't evaluate (not a ffunc or closure)");
+			if(!scm_is_closure(func)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("can't evaluate (not a ffunc or closure)");
+			}
 
 			Expr* cenv = scm_closure_env(func);
 			Expr* anames = scm_closure_args(func);
@@ -269,19 +322,32 @@ begin:
 			error_circuit(newEnv);
 			CURRENT_ENV = newEnv;
 
+			scm_stack_pop(&args);
+
 			e = scm_mk_pair(BEGIN, body);
-			if(!e) return OOM;
+
+			scm_stack_pop(&func);
+
+			if(!e) {
+				scm_stack_pop(&e);
+				return OOM;
+			}
 			goto begin;
 		}
 
+		scm_stack_pop(&e);
 		return scm_mk_error("Can't evaluate pairs (yet)");
 	} else if(scm_is_ffunc(e)) {
+		scm_stack_pop(&e);
 		return scm_mk_symbol("#(Foreign function)#");
 	} else if(scm_is_symbol(e)) {
+		scm_stack_pop(&e);
 		return scm_env_lookup(CURRENT_ENV, e);
 	} else if(scm_is_closure(e)) {
+		scm_stack_pop(&e);
 		return scm_mk_error("can't evaluate closure");
 	} else {
+		scm_stack_pop(&e);
 		return e;
 	}
 }
