@@ -177,7 +177,7 @@ TEST(Eval, If) {
 	scm_reset();
 }
 
-TEST(Eval, TailRec) {
+TEST(Eval, TailCallOptimization) {
 	scm_init();
 	char* s;
 
