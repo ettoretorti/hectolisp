@@ -43,7 +43,10 @@ bool scm_is_closure(const Expr* e) {
 	assert(e);
 	return e->tag == CLOSURE;
 }
-
+bool scm_is_num(const Expr* e) {
+	assert(e);
+	return e->tag == ATOM && (e->atom.type == INT || e->atom.type == REAL);
+}
 bool scm_is_int(const Expr* e) {
 	assert(e);
 	return e->tag == ATOM && e->atom.type == INT;
@@ -242,6 +245,17 @@ Expr* scm_mk_closure(Expr* penv, Expr* args, Expr* body) {
 	}
 
 	return res;
+}
+
+int scm_list_len(Expr* l) {
+	int soFar = 0;
+
+	while(scm_is_pair(l)) {
+		l = scm_cdr(l);
+		soFar++;
+	}
+
+	return l == EMPTY_LIST ? soFar : -1;
 }
 
 Expr* scm_closure_env(Expr* c) {

@@ -46,6 +46,7 @@ bool scm_is_atom(const Expr* e);
 bool scm_is_pair(const Expr* e);
 bool scm_is_closure(const Expr* e);
 
+bool scm_is_num(const Expr* e);
 bool scm_is_int(const Expr* e);
 bool scm_is_real(const Expr* e);
 bool scm_is_bool(const Expr* e);
@@ -93,6 +94,9 @@ Expr* scm_mk_pair(Expr* car, Expr* cdr);
 
 // ADVANCED CONSTRUCTORS
 Expr* scm_mk_list(Expr** l, size_t n);
+
+// MISCELLANEOUS
+int scm_list_len(Expr* l); // returns -1 when not given a proper list
 
 // MEMORY MANAGEMENT
 void scm_gc();
