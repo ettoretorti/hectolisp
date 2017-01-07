@@ -29,6 +29,7 @@ extern void free(void* ptr);
 
 static Expr pool[MEM_SIZE];
 static Expr* freeList = NULL;
+static size_t freeListSize = 0;
 
 static Expr** protStack[STACK_SIZE];
 static size_t protStackSize = 0;
@@ -49,6 +50,8 @@ void scm_init_mem() {
 	pool[MEM_SIZE-1].pair.car = &pool[MEM_SIZE-2];
 	pool[MEM_SIZE-1].pair.cdr = &pool[0];
 	pool[MEM_SIZE-1].protect = false;
+
+	freeListSize = MEM_SIZE;
 }
 
 static Expr* dll_insert(Expr* node, Expr* list) {
@@ -105,6 +108,7 @@ Expr* scm_alloc() {
 
 	Expr* toRet = freeList;
 	freeList = dll_remove(toRet);
+	freeListSize--;
 
 	return toRet;
 }
@@ -180,6 +184,7 @@ void scm_gc() {
 		if(!pool[i].mark && !pool[i].protect) {
 			cleanup(&pool[i]);
 			freeList = dll_insert(&pool[i], freeList);
+			freeListSize++;
 		}
 	}
 }
