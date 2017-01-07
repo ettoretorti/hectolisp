@@ -69,6 +69,22 @@ static Expr* inexact(Expr* args) {
 	return scm_is_real(fst) ? TRUE : FALSE;
 }
 
+static Expr* boolean(Expr* args) {
+	assert(args);
+	
+	if(scm_list_len(args) != 1) return scm_mk_error("boolean? expects 1 arg");
+
+	return scm_is_bool(scm_car(args)) ? TRUE : FALSE;
+}
+
+static Expr* not(Expr* args) {
+	assert(args);
+	
+	if(scm_list_len(args) != 1) return scm_mk_error("not expects 1 arg");
+
+	return scm_is_true(scm_car(args)) ? FALSE : TRUE;
+}
+
 #define checknum(x) if(!scm_is_num(x)) return scm_mk_error("= expects only numbers")
 
 static Expr* num_eq(Expr* args) {
@@ -216,6 +232,9 @@ mk_ff(REALL, real);
 mk_ff(EXACT, exact);
 mk_ff(INEXACT, inexact);
 
+mk_ff(BOOLEAN, boolean);
+mk_ff(NOT, not);
+
 mk_ff(NUM_EQ, num_eq);
 mk_ff(ADD, add);
 
@@ -232,6 +251,9 @@ void scm_init_func() {
 	bind_ff("real?", REALL);
 	bind_ff("exact?", EXACT);
 	bind_ff("inexact?", INEXACT);
+
+	bind_ff("boolean?", BOOLEAN);
+	bind_ff("not", NOT);
 	
 	bind_ff("=", NUM_EQ);
 	bind_ff("+", ADD);
