@@ -69,6 +69,67 @@ static Expr* inexact(Expr* args) {
 	return scm_is_real(fst) ? TRUE : FALSE;
 }
 
+#define checknum(x) if(!scm_is_num(x)) return scm_mk_error("= expects only numbers")
+
+static Expr* num_eq(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return TRUE;
+	
+	Expr* cur = scm_car(args);
+	checknum(cur);
+	
+	bool eq = true;
+	bool exact = scm_is_int(cur);
+	long long ex;
+	double in;
+
+	if(exact) {
+		ex = scm_ival(cur);
+		in = ex;
+	} else {
+		in = scm_rval(cur);
+		ex = in;
+		
+		exact = ((double)ex) == in;
+	}
+
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		cur = scm_car(args);
+		checknum(cur);
+
+		if(exact && scm_is_int(cur)) {
+			if(ex != scm_ival(cur)) {
+				eq = false;
+				break;
+			}
+		} else if(exact) {
+			if(in != scm_rval(cur)) {
+				eq = false;
+				break;
+			}
+		} else if(scm_is_real(cur)) {
+			if(in != scm_rval(cur)) {
+				eq = false;
+				break;
+			}
+		} else {
+			eq = false;
+			break;
+		}
+
+		args = scm_cdr(args);
+	}
+
+	if(eq && args != EMPTY_LIST) return scm_mk_error("arguments to = aren't a proper list");
+
+	return eq ? TRUE : FALSE;
+}
+
+#undef checknum
+
 static Expr* add(Expr* args) {
 	assert(args);
 
@@ -98,6 +159,54 @@ static Expr* add(Expr* args) {
 	return exact ? scm_mk_int(dbuf) : scm_mk_real(dbuf);
 }
 
+static Expr* pair(Expr* args) {
+	assert(args);
+
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("passed more than 1 arg to pair?");
+	
+	return scm_is_pair(scm_car(args)) ? TRUE : FALSE;
+}
+
+static Expr* car(Expr* args) {
+	assert(args);
+
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("passed more than 1 arg to car");
+
+	Expr* arg = scm_car(args);
+	if(!scm_is_pair(arg)) return scm_mk_error("arg to car must be a pair");
+
+	return scm_car(arg);
+}
+
+static Expr* cdr(Expr* args) {
+	assert(args);
+
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("passed more than 1 arg to cdr");
+
+	Expr* arg = scm_car(args);
+	if(!scm_is_pair(arg)) return scm_mk_error("arg to cdr must be a pair");
+
+	return scm_cdr(arg);
+}
+
+static Expr* cons(Expr* args) {
+	assert(args);
+	
+	if(scm_list_len(args) != 2) return scm_mk_error("cons expects 2 args");
+	
+	Expr* es[2] = { scm_car(args), scm_cadr(args) };
+	
+	scm_stack_push(&es[0]);
+	scm_stack_push(&es[1]);
+
+	Expr* toRet = scm_mk_pair(es[0], es[1]);
+
+	scm_stack_pop(&es[1]);
+	scm_stack_pop(&es[0]);
+
+	return toRet ? toRet : OOM;
+}
+
 
 #define mk_ff(name, ptr) static Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
 
@@ -107,7 +216,13 @@ mk_ff(REALL, real);
 mk_ff(EXACT, exact);
 mk_ff(INEXACT, inexact);
 
+mk_ff(NUM_EQ, num_eq);
 mk_ff(ADD, add);
+
+mk_ff(PAIRR, pair);
+mk_ff(CAR, car);
+mk_ff(CDR, cdr);
+mk_ff(CONS, cons);
 
 #define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), &oname)
 
@@ -117,6 +232,12 @@ void scm_init_func() {
 	bind_ff("real?", REALL);
 	bind_ff("exact?", EXACT);
 	bind_ff("inexact?", INEXACT);
-
+	
+	bind_ff("=", NUM_EQ);
 	bind_ff("+", ADD);
+
+	bind_ff("pair?", PAIRR);
+	bind_ff("car", CAR);
+	bind_ff("cdr", CDR);
+	bind_ff("cons", CONS);
 }
