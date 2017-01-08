@@ -1,6 +1,9 @@
 #include "SchemeSecret.h"
 
+#include <string.h>
 #include <assert.h>
+
+// Numerical predicates
 
 static Expr* number(Expr* args) {
 	assert(args);
@@ -69,6 +72,8 @@ static Expr* inexact(Expr* args) {
 	return scm_is_real(fst) ? TRUE : FALSE;
 }
 
+// Boolean operations
+
 static Expr* boolean(Expr* args) {
 	assert(args);
 	
@@ -84,6 +89,39 @@ static Expr* not(Expr* args) {
 
 	return scm_is_true(scm_car(args)) ? FALSE : TRUE;
 }
+
+// Equality
+
+static Expr* eq(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 2) return scm_mk_error("eq? expects 2 args");
+
+	return scm_car(args) == scm_cadr(args) ? TRUE : FALSE;
+}
+
+static Expr* num_eq(Expr*);
+
+static Expr* eqv(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 2) return scm_mk_error("eqv? expects 2 args");
+	
+	Expr* fst = scm_car(args);
+	Expr* snd = scm_cadr(args);
+
+	if(fst == snd) return TRUE;
+	if(scm_is_pair(fst) || scm_is_pair(snd)) return FALSE;
+	if(scm_is_closure(fst) || scm_is_closure(snd)) return FALSE;
+	if(scm_is_num(fst) && scm_is_num(snd)) return num_eq(args);
+	if(scm_is_char(fst) && scm_is_char(snd) && scm_cval(fst) == scm_cval(snd)) return TRUE;
+	if(scm_is_string(fst) && scm_is_string(snd) && strcmp(scm_sval(fst), scm_sval(snd)) == 0) return TRUE;
+
+	return FALSE;
+}
+
+
+// Numerical predicates
 
 #define checknum(x) if(!scm_is_num(x)) return scm_mk_error("= expects only numbers")
 
@@ -146,6 +184,8 @@ static Expr* num_eq(Expr* args) {
 
 #undef checknum
 
+// Numerical operations
+
 static Expr* add(Expr* args) {
 	assert(args);
 
@@ -172,8 +212,56 @@ static Expr* add(Expr* args) {
 	}
 
 
-	return exact ? scm_mk_int(dbuf) : scm_mk_real(dbuf);
+	return exact ? scm_mk_int(lbuf) : scm_mk_real(dbuf);
 }
+
+static Expr* sub(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("no arguments passed to - (expected at least 1)");
+
+	// unary case
+	if(scm_cdr(args) == EMPTY_LIST) {
+		Expr* v = scm_car(args);
+
+		if(scm_is_int(v)) return scm_mk_int(-scm_ival(v));
+		if(scm_is_real(v)) return scm_mk_int(-scm_rval(v));
+
+		return scm_mk_error("wrong type of argument to -");
+	}
+
+	Expr* first = scm_car(args);
+	if(!scm_is_num(first)) return scm_mk_error("wrong type of argument to -");
+
+	bool exact = scm_is_int(first);
+	double dbuf = exact ? scm_ival(first) : scm_rval(first);
+	long long lbuf = exact ? scm_ival(first) : 0;
+
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		Expr* cur = scm_car(args);
+		if(scm_is_int(cur)) {
+			lbuf -= scm_ival(cur);
+			dbuf -= scm_ival(cur);
+		} else if(scm_is_real(cur)) {
+			exact = false;
+			dbuf -= scm_rval(cur);
+		} else {
+			return scm_mk_error("Wrong type of argument to +");
+		}
+		args = scm_cdr(args);
+	}
+
+	if(args != EMPTY_LIST) {
+		return scm_mk_error("args to + aren't a proper list");
+	}
+
+
+	return exact ? scm_mk_int(lbuf) : scm_mk_real(dbuf);
+}
+
+// Pair operations
 
 static Expr* pair(Expr* args) {
 	assert(args);
@@ -223,6 +311,66 @@ static Expr* cons(Expr* args) {
 	return toRet ? toRet : OOM;
 }
 
+// Procedure operations
+
+static Expr* procedure(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("procedure? expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("procedure? expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	return fst->tag == CLOSURE || (fst->tag == ATOM && fst->atom.type == FFUNC) ? TRUE : FALSE;
+}
+
+static Expr* p_procedure(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("primitive-procedure? expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("primitive-procedure? expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	return (fst->tag == ATOM && fst->atom.type == FFUNC) ? TRUE : FALSE;
+}
+
+static Expr* c_procedure(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("compound-procedure? expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("compound-procedure? expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	return fst->tag == CLOSURE ? TRUE : FALSE;
+}
+
+static Expr* c_args(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("closure-args expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("closure-args expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	if(fst->tag != CLOSURE) return scm_mk_error("argument to closure-args is not a closure");
+
+	return scm_closure_args(fst);
+}
+
+static Expr* c_code(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("closure-code expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("closure-acode expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	if(fst->tag != CLOSURE) return scm_mk_error("argument to closure-code is not a closure");
+
+	return scm_closure_body(fst);
+}
 
 #define mk_ff(name, ptr) static Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
 
@@ -235,13 +383,23 @@ mk_ff(INEXACT, inexact);
 mk_ff(BOOLEAN, boolean);
 mk_ff(NOT, not);
 
+mk_ff(EQ, eq);
+mk_ff(EQV, eqv);
+
 mk_ff(NUM_EQ, num_eq);
 mk_ff(ADD, add);
+mk_ff(SUB, sub);
 
 mk_ff(PAIRR, pair);
 mk_ff(CAR, car);
 mk_ff(CDR, cdr);
 mk_ff(CONS, cons);
+
+mk_ff(PROC, procedure);
+mk_ff(P_PROC, p_procedure);
+mk_ff(C_PROC, c_procedure);
+mk_ff(C_ARGS, c_args);
+mk_ff(C_CODE, c_code);
 
 #define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), &oname)
 
@@ -254,12 +412,22 @@ void scm_init_func() {
 
 	bind_ff("boolean?", BOOLEAN);
 	bind_ff("not", NOT);
+
+	bind_ff("eq?", EQ);
+	bind_ff("eqv?", EQV);
 	
 	bind_ff("=", NUM_EQ);
 	bind_ff("+", ADD);
+	bind_ff("-", SUB);
 
 	bind_ff("pair?", PAIRR);
 	bind_ff("car", CAR);
 	bind_ff("cdr", CDR);
 	bind_ff("cons", CONS);
+
+	bind_ff("procedure?", PROC);
+	bind_ff("primitive-procedure?", P_PROC);
+	bind_ff("compound-procedure?", C_PROC);
+	bind_ff("closure-args", C_ARGS);
+	bind_ff("closure-code", C_CODE);
 }
