@@ -109,6 +109,37 @@ static Expr* in2ex(Expr* args) {
 
 }
 
+// Character conversions
+
+static Expr* chr2int(Expr* args) {
+	assert(args);
+	
+	if(scm_list_len(args) != 1) return scm_mk_error("char->integer expects 1 arg");
+
+	Expr* fst = scm_car(args);
+
+	if(!scm_is_char(fst)) return scm_mk_error("char->integer expects a character");
+
+	return scm_mk_int(scm_cval(fst));
+}
+
+static Expr* int2chr(Expr* args) {
+	assert(args);
+	
+	if(scm_list_len(args) != 1) return scm_mk_error("integer->char expects 1 arg");
+
+	Expr* fst = scm_car(args);
+
+	if(!scm_is_int(fst)) return scm_mk_error("integer->char expects an integer");
+	
+	long long v = scm_ival(fst);
+	
+	if(!(0 <= v && v < 256)) return scm_mk_error("argument to integer->char is out of range");
+
+	return scm_mk_char((char)v);
+
+}
+
 // Boolean operations
 
 static Expr* boolean(Expr* args) {
@@ -419,6 +450,8 @@ mk_ff(INEXACT, inexact);
 
 mk_ff(EX2IN, ex2in);
 mk_ff(IN2EX, in2ex);
+mk_ff(CHR2INT, chr2int);
+mk_ff(INT2CHR, int2chr);
 
 mk_ff(BOOLEAN, boolean);
 mk_ff(NOT, not);
@@ -452,6 +485,8 @@ void scm_init_func() {
 
 	bind_ff("exact->inexact", EX2IN);
 	bind_ff("inexact->exact", IN2EX);
+	bind_ff("char->integer", CHR2INT);
+	bind_ff("integer->char", INT2CHR);
 
 	bind_ff("boolean?", BOOLEAN);
 	bind_ff("not", NOT);
