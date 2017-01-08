@@ -75,6 +75,7 @@ static Expr* save_eval_all(Expr* es) {
 
 
 // needs modification to deal with the tailcall cleanup
+// TODO STILL BROKEN IN CASES OTHER THINGS ARE STACKED FIRST
 #define error_circuit(expr) \
 	{ Expr* TmP = expr; \
 	  if(scm_is_error(TmP)) { scm_stack_pop(&e); return TmP; } }
