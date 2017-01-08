@@ -67,6 +67,16 @@ static void b_eat_til_bound(Buffer* b) {
 	b->i = i;
 }
 
+static void b_eat_til_nextline(Buffer* b) {
+	size_t i = b->i;
+
+	while(i < b->n && b->s[i] != '\n') {
+		i++;
+	}
+
+	b->i = i + 1;
+}
+
 static inline char b_get(Buffer* b) {
 	if(b->i <= b->n) return b->s[b->i++];
 	else            return '\0';
@@ -252,6 +262,7 @@ Expr* reade_list(Buffer* b) {
 }
 
 static Expr* reade(Buffer* b) {
+begin:
 	b_eat_white(b);
 
 	char cur = b_peek(b);
@@ -296,6 +307,9 @@ static Expr* reade(Buffer* b) {
 		final = &UNEXPECTED_RPAREN;
 	} else if(cur == '\0') {
 		final = &EOI;
+	} else if(cur == ';') {
+		b_eat_til_nextline(b);
+		goto begin;
 	} else {
 		final = &UNKNOWN;
 	}
