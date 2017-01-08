@@ -72,6 +72,43 @@ static Expr* inexact(Expr* args) {
 	return scm_is_real(fst) ? TRUE : FALSE;
 }
 
+// Numerical conversions
+
+static Expr* ex2in(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 1) return scm_mk_error("exact->inexact expects 1 arg");
+
+	Expr* fst = scm_car(args);
+
+	if(scm_is_int(fst)) {
+		Expr* toRet = scm_mk_real(scm_ival(fst));
+		return toRet ? toRet : OOM;
+	} else if(scm_is_real(fst)) {
+		return fst;
+	} else {
+		return scm_mk_error("exact->inexact expects a number");
+	}
+}
+
+static Expr* in2ex(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 1) return scm_mk_error("inexact->exact expects 1 arg");
+
+	Expr* fst = scm_car(args);
+
+	if(scm_is_int(fst)) {
+		return fst;
+	} else if(scm_is_real(fst)) {
+		Expr* toRet = scm_mk_int(scm_rval(fst));
+		return toRet ? toRet : OOM;
+	} else {
+		return scm_mk_error("inexact->exact expects a number");
+	}
+
+}
+
 // Boolean operations
 
 static Expr* boolean(Expr* args) {
@@ -380,6 +417,9 @@ mk_ff(REALL, real);
 mk_ff(EXACT, exact);
 mk_ff(INEXACT, inexact);
 
+mk_ff(EX2IN, ex2in);
+mk_ff(IN2EX, in2ex);
+
 mk_ff(BOOLEAN, boolean);
 mk_ff(NOT, not);
 
@@ -409,6 +449,9 @@ void scm_init_func() {
 	bind_ff("real?", REALL);
 	bind_ff("exact?", EXACT);
 	bind_ff("inexact?", INEXACT);
+
+	bind_ff("exact->inexact", EX2IN);
+	bind_ff("inexact->exact", IN2EX);
 
 	bind_ff("boolean?", BOOLEAN);
 	bind_ff("not", NOT);
