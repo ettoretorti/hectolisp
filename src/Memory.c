@@ -27,12 +27,22 @@
 //TODO: remove
 extern void free(void* ptr);
 
+static size_t gcRuns = 0;
+
 static Expr pool[MEM_SIZE];
 static Expr* freeList = NULL;
 static size_t freeListSize = 0;
 
 static Expr** protStack[STACK_SIZE];
 static size_t protStackSize = 0;
+
+unsigned scm_gc_runs() {
+	return gcRuns;
+}
+
+unsigned scm_gc_free_objects() {
+	return freeListSize;
+}
 
 void scm_init_mem() {
 	freeList = &pool[0];
@@ -52,6 +62,7 @@ void scm_init_mem() {
 	pool[MEM_SIZE-1].protect = false;
 
 	freeListSize = MEM_SIZE;
+	gcRuns = 0;
 }
 
 static Expr* dll_insert(Expr* node, Expr* list) {
@@ -187,4 +198,6 @@ void scm_gc() {
 			freeListSize++;
 		}
 	}
+
+	gcRuns++;
 }

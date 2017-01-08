@@ -110,6 +110,9 @@ void scm_stack_pop(Expr** e);
 void scm_init();
 void scm_reset();
 
+unsigned scm_gc_runs();
+unsigned scm_gc_free_objects();
+
 Expr* scm_read(const char* in);
 Expr* scm_read_inc(const char* in, char** rem);
 Expr* scm_eval(Expr* expr);
