@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define puref __attribute((__pure__))
+
 typedef struct Expr Expr;
 
 typedef Expr *(*ffunc)(Expr*);
@@ -42,34 +44,34 @@ extern Expr* TRUE;
 extern Expr* FALSE;
 
 // EXPR PREDICATES
-bool scm_is_atom(const Expr* e);
-bool scm_is_pair(const Expr* e);
-bool scm_is_closure(const Expr* e);
+bool scm_is_atom(const Expr* e) puref;
+bool scm_is_pair(const Expr* e) puref;
+bool scm_is_closure(const Expr* e) puref;
 
-bool scm_is_num(const Expr* e);
-bool scm_is_int(const Expr* e);
-bool scm_is_real(const Expr* e);
-bool scm_is_bool(const Expr* e);
-bool scm_is_char(const Expr* e);
-bool scm_is_string(const Expr* e);
-bool scm_is_symbol(const Expr* e);
-bool scm_is_error(const Expr* e);
-bool scm_is_ffunc(const Expr* e);
+bool scm_is_num(const Expr* e) puref;
+bool scm_is_int(const Expr* e) puref;
+bool scm_is_real(const Expr* e) puref;
+bool scm_is_bool(const Expr* e) puref;
+bool scm_is_char(const Expr* e) puref;
+bool scm_is_string(const Expr* e) puref;
+bool scm_is_symbol(const Expr* e) puref;
+bool scm_is_error(const Expr* e) puref;
+bool scm_is_ffunc(const Expr* e) puref;
 
-bool scm_is_true(const Expr* e);
-bool scm_is_false(const Expr* e);
+bool scm_is_true(const Expr* e) puref;
+bool scm_is_false(const Expr* e) puref;
 bool scm_is_list(const Expr* e);
 
 
 // EXPR ACCESSORS
-long long scm_ival(const Expr* e);
-double    scm_rval(const Expr* e);
-char      scm_cval(const Expr* e);
-char*     scm_sval(const Expr* e);
-bool      scm_bval(const Expr* e);
-ffunc     scm_ffval(const Expr* e);
-Expr*     scm_car(const Expr* e);
-Expr*     scm_cdr(const Expr* e);
+long long scm_ival(const Expr* e) puref;
+double    scm_rval(const Expr* e) puref;
+char      scm_cval(const Expr* e) puref;
+char*     scm_sval(const Expr* e) puref;
+bool      scm_bval(const Expr* e) puref;
+ffunc     scm_ffval(const Expr* e) puref;
+Expr*     scm_car(const Expr* e) puref;
+Expr*     scm_cdr(const Expr* e) puref;
 #define scm_caar(e)   scm_car(scm_car(e))
 #define scm_cadr(e)   scm_car(scm_cdr(e))
 #define scm_cdar(e)   scm_cdr(scm_car(e))
@@ -119,6 +121,7 @@ Expr* scm_eval(Expr* expr);
 char* scm_print(Expr* expr);
 
 
+#undef puref
 
 #ifdef __cplusplus
 }
