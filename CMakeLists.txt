@@ -9,8 +9,11 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 file(GLOB HLISP_FILES "src/*.cpp" "src/*.c")
+set(HLISP_AGEN_DIR "${CMAKE_BINARY_DIR}/agen")
+set(HLISP_AGEN_FILES "${HLISP_AGEN_DIR}/stdlib.c")
+set_source_files_properties(${HLISP_AGEN_FILES} PROPERTIES GENERATED true)
 
-add_library(hlisp ${HLISP_FILES})
+add_library(hlisp ${HLISP_FILES} ${HLISP_AGEN_FILES})
 
 target_include_directories(
     hlisp
@@ -19,6 +22,15 @@ target_include_directories(
 target_compile_options(
     hlisp
     PRIVATE -Wall)
+
+add_custom_command(
+    OUTPUT "${HLISP_AGEN_DIR}/stdlib.c"
+    COMMAND mkdir -p "${HLISP_AGEN_DIR}"
+    COMMAND xxd -i "${CMAKE_SOURCE_DIR}/src/stdlib.scm" |
+            sed -e 's/[a-zA-Z_]*stdlib_scm/scm_stdlib/g'
+                -e 's/unsigned/const unsigned/g' 
+            > "${HLISP_AGEN_DIR}/stdlib.c"
+    DEPENDS "${CMAKE_SOURCE_DIR}/src/stdlib.scm")
 
 if(NOT "${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
     #gcc options

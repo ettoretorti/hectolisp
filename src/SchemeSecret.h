@@ -6,6 +6,10 @@
 extern "C" {
 #endif
 
+//Standard library
+extern const unsigned char scm_stdlib[];
+extern const unsigned scm_stdlib_len;
+
 //Special syntax
 extern Expr* DEFINE;
 extern Expr* SET;
