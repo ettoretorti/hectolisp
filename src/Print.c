@@ -165,6 +165,9 @@ static void print(Expr* e, buf* b) {
 		append(b, scm_sval(e));
 		append(b, ")#");
 		break;
+	case FFUNC:
+		append(b, "#(PRIMITIVE PROC)#");
+		break;
 	default:
 		append(b, "#UNKNOWN#");
 		break;
