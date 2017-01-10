@@ -309,7 +309,7 @@ begin:
 			}
 			
 			if(!scm_is_closure(func)) {
-				scm_stack_pop(&e);
+				scm_stack_pop(&args); scm_stack_pop(&func); scm_stack_pop(&e);
 				return scm_mk_error("can't evaluate (not a ffunc or closure)");
 			}
 
