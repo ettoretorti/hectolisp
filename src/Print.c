@@ -132,9 +132,9 @@ static void print(Expr* e, buf* b) {
 		print_pair(e, b);
 		return;
 	} else if(scm_is_closure(e)) {
-		append(b, "#CLOSURE WITH ARGS: ");
+		append(b, "#(CLOSURE WITH ARGS: ");
 		print(scm_closure_args(e), b);
-		append(b, "#");
+		append(b, ")#");
 		return;
 	}
 
