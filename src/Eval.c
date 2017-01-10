@@ -27,6 +27,30 @@ static Expr* save_eval(Expr* es) {
 	return res;
 }
 
+static Expr* def2lambda(Expr* defBody) {
+	assert(defBody);
+	assert(scm_is_pair(defBody));
+
+	Expr* nameArgs = scm_car(defBody);
+	Expr* body = scm_cdr(defBody);
+
+	assert(scm_is_pair(nameArgs));
+
+	Expr* args = scm_cdr(nameArgs);
+
+	Expr* tmp = scm_mk_pair(args, body);
+	if(!tmp) return OOM;
+
+	scm_stack_push(&tmp);
+
+	tmp = scm_mk_pair(LAMBDA, tmp);
+	if(!tmp) tmp = OOM;
+
+	scm_stack_pop(&tmp);
+
+	return tmp;
+}
+
 // short circuits errors up the call stack
 #define error_circuit(expr) \
 	{ Expr* TmP = expr; \
@@ -181,7 +205,26 @@ begin:
 		} else if(is_tpair(e, DEFINE)) {
 			e = scm_cdr(e);
 
-			if(!scm_is_pair(e) || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
+			bool isPair = scm_is_pair(e);
+
+			if(isPair && scm_is_pair(scm_car(e))) {
+				Expr* name = scm_caar(e);
+				if(!scm_is_symbol(name)) {
+					scm_stack_pop(&e);
+					return scm_mk_error("name for defined function is not a symbol");
+				}
+
+				Expr* closure = scm_eval(def2lambda(e));
+				error_circuit(closure);
+				scm_stack_push(&closure);
+				Expr* res = scm_env_define(CURRENT_ENV, name, closure);
+				scm_stack_pop(&closure);
+
+				scm_stack_pop(&e);
+				return res;
+			}
+
+			if(!isPair || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
 				scm_stack_pop(&e);
 				return scm_mk_error("Malformed define");
 			}
