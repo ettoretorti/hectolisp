@@ -440,6 +440,26 @@ static Expr* c_code(Expr* args) {
 	return scm_closure_body(fst);
 }
 
+static Expr* gc(Expr* args) {
+	assert(args);
+
+	if(args != EMPTY_LIST) return scm_mk_error("gc expects no arguments");
+
+	scm_gc();
+
+	return EMPTY_LIST;
+}
+
+static Expr* free_mem(Expr* args) {
+	assert(args);
+
+	if(args != EMPTY_LIST) return scm_mk_error("gc expects no arguments");
+	
+	Expr* toRet = scm_mk_int(scm_gc_free_objects());
+
+	return toRet ? toRet : OOM;
+}
+
 #define mk_ff(name, ptr) static Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
 
 mk_ff(NUMBER, number);
@@ -474,6 +494,9 @@ mk_ff(C_PROC, c_procedure);
 mk_ff(C_ARGS, c_args);
 mk_ff(C_CODE, c_code);
 
+mk_ff(GC, gc);
+mk_ff(FREE_M, free_mem);
+
 #define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), &oname)
 
 void scm_init_func() {
@@ -502,6 +525,9 @@ void scm_init_func() {
 	bind_ff("car", CAR);
 	bind_ff("cdr", CDR);
 	bind_ff("cons", CONS);
+
+	bind_ff("gc", GC);
+	bind_ff("free-mem", FREE_M);
 
 	bind_ff("procedure?", PROC);
 	bind_ff("primitive-procedure?", P_PROC);
