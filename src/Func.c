@@ -460,6 +460,20 @@ static Expr* free_mem(Expr* args) {
 	return toRet ? toRet : OOM;
 }
 
+static Expr* error(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("generic error");
+
+	if(scm_list_len(args) != 1) return scm_mk_error("error expects zero or one arguments)");
+
+	Expr* msg = scm_car(args);
+
+	if(!scm_is_string(msg)) return scm_mk_error("error expects a string as its argument");
+
+	return scm_mk_error(scm_sval(msg));
+}
+
 #define mk_ff(name, ptr) static Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
 
 mk_ff(NUMBER, number);
@@ -496,6 +510,7 @@ mk_ff(C_CODE, c_code);
 
 mk_ff(GC, gc);
 mk_ff(FREE_M, free_mem);
+mk_ff(ERRORF, error);
 
 #define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), &oname)
 
@@ -528,6 +543,7 @@ void scm_init_func() {
 
 	bind_ff("gc", GC);
 	bind_ff("free-mem", FREE_M);
+	bind_ff("error", ERRORF);
 
 	bind_ff("procedure?", PROC);
 	bind_ff("primitive-procedure?", P_PROC);
