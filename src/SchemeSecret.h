@@ -60,6 +60,9 @@ void scm_reset_symbol_set();
 //Functions
 void scm_init_func();
 
+//Standard library
+void scm_init_stdlib();
+
 //Closures
 Expr* scm_mk_closure(Expr* penv, Expr* args, Expr* body);
 Expr* scm_closure_env(Expr* c);
