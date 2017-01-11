@@ -86,7 +86,7 @@ Expr*     scm_cdr(const Expr* e) puref;
 #define scm_cdddr(e)  scm_cdr(scm_cdr(scm_cdr(e)))
 
 // EXPR_CONSTRUCTORS
-Expr* scm_mk_int(int v);
+Expr* scm_mk_int(long long v);
 Expr* scm_mk_real(double v);
 Expr* scm_mk_char(char v);
 Expr* scm_mk_string(const char* v);

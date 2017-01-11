@@ -190,8 +190,8 @@ Expr* scm_cdr(const Expr* e) {
 	return e->pair.cdr;
 }
 
-Expr* scm_mk_int(int v) {
-	if(0 <= v && v < (int)(sizeof(someInts)/sizeof(someInts[0]))) {
+Expr* scm_mk_int(long long v) {
+	if(0 <= v && v < (long long)(sizeof(someInts)/sizeof(someInts[0]))) {
 		return &someInts[v];
 	}
 
