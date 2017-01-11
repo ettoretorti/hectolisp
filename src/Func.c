@@ -182,7 +182,6 @@ static Expr* eqv(Expr* args) {
 	if(scm_is_pair(fst) || scm_is_pair(snd)) return FALSE;
 	if(scm_is_closure(fst) || scm_is_closure(snd)) return FALSE;
 	if(scm_is_num(fst) && scm_is_num(snd)) return num_eq(args);
-	if(scm_is_char(fst) && scm_is_char(snd) && scm_cval(fst) == scm_cval(snd)) return TRUE;
 	if(scm_is_string(fst) && scm_is_string(snd) && strcmp(scm_sval(fst), scm_sval(snd)) == 0) return TRUE;
 
 	return FALSE;
