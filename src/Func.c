@@ -3,6 +3,10 @@
 #include <string.h>
 #include <assert.h>
 
+// Remove later
+void* malloc(size_t);
+void free(void*);
+
 // Numerical predicates
 
 static Expr* number(Expr* args) {
@@ -378,6 +382,212 @@ static Expr* cons(Expr* args) {
 	return toRet ? toRet : OOM;
 }
 
+static Expr* list(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return EMPTY_LIST;
+
+	Expr* head = scm_mk_pair(EMPTY_LIST, EMPTY_LIST);
+	Expr* cur = head;
+	if(!head) return OOM;
+	scm_stack_push(&head);
+
+	while(scm_is_pair(args) && scm_is_pair(scm_cdr(args))) {
+		cur->pair.car = scm_car(args);
+		Expr* next = scm_mk_pair(EMPTY_LIST, EMPTY_LIST);
+		if(!next) {
+			cur = NULL;
+			break;
+		}
+		cur->pair.cdr = next;
+		cur = next;
+
+		args = scm_cdr(args);
+	}
+
+	scm_stack_pop(&head);
+
+	if(!cur) return OOM;
+
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("Args to list aren't in a proper list");
+	
+	cur->pair.car = scm_car(args);
+
+	return head;
+}
+
+// String functions
+static Expr* is_str(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 1) return scm_mk_error("string? expects 1 arg");
+
+	return scm_is_string(scm_car(args)) ? TRUE: FALSE;
+}
+
+static Expr* str_null(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 1) return scm_mk_error("string-null? expects 1 arg");
+
+	Expr* a = scm_car(args);
+
+	if(!scm_is_string(a)) return scm_mk_error("string-null? expects a string");
+
+	return scm_sval(a)[0] == '\0' ? TRUE : FALSE;
+}
+
+static Expr* str_ref(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 2) return scm_mk_error("string-ref expects 2 args");
+
+	Expr* a = scm_car(args);
+
+	if(!scm_is_string(a)) return scm_mk_error("string-ref expects a string as its 1st arg");
+
+	Expr* i = scm_cadr(args);
+
+	if(!scm_is_int(i)) return scm_mk_error("string-ref expects an int as its 2nd arg");
+
+	Expr* toRet = scm_mk_char(scm_sval(a)[scm_ival(i)]);
+
+	return toRet ? toRet : OOM;
+}
+
+static Expr* str_set(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 3) return scm_mk_error("string-set! expects 2 args");
+
+	Expr* a = scm_car(args);
+
+	if(!scm_is_string(a)) return scm_mk_error("string-set! expects a string as its 1st arg");
+
+	Expr* i = scm_cadr(args);
+
+	if(!scm_is_int(i)) return scm_mk_error("string-set! expects an int as its 2nd arg");
+
+	Expr* c = scm_caddr(args);
+
+	if(!scm_is_char(c)) return scm_mk_error("string-set! expects a char as its 3rd arg");
+
+	scm_sval(a)[scm_ival(i)] = scm_cval(c);
+
+	return EMPTY_LIST;
+}
+
+static Expr* str_len(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 1) return scm_mk_error("string-length expects 1 arg");
+
+	Expr* a = scm_car(args);
+
+	if(!scm_is_string(a)) return scm_mk_error("string-length expects a string");
+
+	Expr* toRet = scm_mk_int(strlen(scm_sval(a)));
+
+	return toRet ? toRet : OOM;
+}
+
+static Expr* str(Expr* args) {
+	assert(args);
+
+	int len = scm_list_len(args);
+
+	if(len < 0) return scm_mk_error("string expects a proper list as its arguments");
+
+	char* buf = malloc(len + 1);
+	if(!buf) return OOM;
+	
+	int i = 0;
+	while(args != EMPTY_LIST) {
+		Expr* c = scm_car(args);
+
+		if(!scm_is_char(c)) {
+			i = -1;
+			break;
+		}
+		buf[i++] = scm_cval(c);
+
+		args = scm_cdr(args);
+	}
+
+	buf[len] = '\0';
+
+	if(i == -1) {
+		free(buf);
+		return scm_mk_error("string expects all its args to be chars");
+	}
+
+	Expr* toRet = scm_alloc();
+	if(toRet) {
+		toRet->tag = ATOM;
+		toRet->atom.type = STRING;
+		toRet->atom.sval = buf;
+		return toRet;
+	}
+
+	return OOM;
+}
+
+static Expr* mk_str(Expr* args) {
+	assert(args);
+
+	int len = scm_list_len(args);
+
+	if(len < 0 || len > 2) return scm_mk_error("make-string expects 1 or 2 args");
+
+	Expr* l = scm_car(args);
+	if(!scm_is_int(l)) return scm_mk_error("make-string expects an int as its 1st arg");
+
+	long long size = scm_ival(l);
+
+	char* buf = malloc(size+1);
+	if(!buf) return OOM;
+
+	Expr* toRet = scm_alloc();
+	if(!toRet) {
+		free(buf);
+		return OOM;
+	}
+
+	char c = 'a';
+	if(len == 2) {
+		Expr* ca = scm_cadr(args);
+		if(!scm_is_char(ca)) {
+			free(buf);
+			return scm_mk_error("make-string expects a char as its 2nd arg");
+		}
+
+		c = scm_cval(ca);
+	}
+
+	memset(buf, c, size);
+	buf[size+1] = '\0';
+
+	toRet->tag = ATOM;
+	toRet->atom.type = STRING;
+	toRet->atom.sval = buf;
+
+	return toRet;
+}
+
+static Expr* str_cpy(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 1) return scm_mk_error("string-copy expects 1 arg");
+
+	Expr* s = scm_car(args);
+
+	if(!scm_is_string(s)) return scm_mk_error("string-copy expects a string as its 1st arg");
+
+	Expr* toRet = scm_mk_string(scm_sval(s));
+
+	return toRet ? toRet : OOM;
+}
+
 // Procedure operations
 
 static Expr* procedure(Expr* args) {
@@ -500,6 +710,17 @@ mk_ff(PAIRR, pair);
 mk_ff(CAR, car);
 mk_ff(CDR, cdr);
 mk_ff(CONS, cons);
+mk_ff(LIST, list);
+
+mk_ff(ISSTR, is_str);
+mk_ff(STRNUL, str_null);
+mk_ff(STRREF, str_ref);
+mk_ff(STRSET, str_set);
+mk_ff(STRLEN, str_len);
+
+mk_ff(SSTRING, str);
+mk_ff(MKSTR, mk_str);
+mk_ff(STRCPY, str_cpy);
 
 mk_ff(PROC, procedure);
 mk_ff(P_PROC, p_procedure);
@@ -539,6 +760,17 @@ void scm_init_func() {
 	bind_ff("car", CAR);
 	bind_ff("cdr", CDR);
 	bind_ff("cons", CONS);
+	bind_ff("list", LIST);
+
+	bind_ff("string?", ISSTR);
+	bind_ff("string-null?", STRNUL);
+	bind_ff("string-ref", STRREF);
+	bind_ff("string-set!", STRSET);
+	bind_ff("string-length", STRLEN);
+
+	bind_ff("string", SSTRING);
+	bind_ff("make-string", MKSTR);
+	bind_ff("string-copy", STRCPY);
 
 	bind_ff("gc", GC);
 	bind_ff("free-mem", FREE_M);
