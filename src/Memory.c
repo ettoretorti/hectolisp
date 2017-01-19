@@ -172,6 +172,7 @@ void scm_stack_pop(Expr** e) {
 
 void scm_gc() {
 	freeList = NULL;
+	freeListSize = 0;
 
 	for(size_t i = 0; i < MEM_SIZE; i++) {
 		pool[i].mark = false;
