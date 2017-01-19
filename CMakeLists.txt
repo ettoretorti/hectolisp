@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.1)
 project (hectolisp)
 
 option(BUILD_TESTS "Build the unit tests" OFF)
+option(BUILD_REPL  "Build the REPL" OFF)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
@@ -75,3 +76,10 @@ if(BUILD_TESTS)
         PRIVATE ${CMAKE_SOURCE_DIR}/src)
 endif()
 
+if(BUILD_REPL)
+    add_executable(hrepl "${CMAKE_SOURCE_DIR}/src/hrepl/hrepl.c")
+    target_link_libraries(hrepl hlisp readline)
+    target_include_directories(
+        hrepl
+        PRIVATE ${CMAKE_SOURCE_DIR}/src)
+endif()
