@@ -163,7 +163,7 @@ void scm_stack_push(Expr** e) {
 }
 
 void scm_stack_pop(Expr** e) {
-	assert(e);
+	assert(e); (void)e;
 	assert(protStackSize > 0);
 	assert(e == protStack[protStackSize - 1]);
 

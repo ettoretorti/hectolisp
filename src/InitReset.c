@@ -27,6 +27,6 @@ void scm_init_stdlib() {
 	while(*src != '\0') {
 		Expr* red = scm_read_inc(src, &src);
 		Expr* res = scm_eval(red);
-		assert(res); assert(!scm_is_error(res));
+		assert(res); assert(!scm_is_error(res)); (void)res;
 	}
 }
