@@ -15,7 +15,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define mk_err(name, msg) static Expr name = { .tag = ATOM, .atom = { .type = ERROR, .sval = msg }, .mark = true, .protect = true }
+#define mk_err(name, msg) static const Expr name = { .tag = ATOM, .atom = { .type = ERROR, .sval = msg }, .mark = true, .protect = true }
 
 mk_err(EOI_STRING, "End of input before closing \" in string");
 mk_err(NON_DIGIT, "Found non digit character in number");
@@ -55,6 +55,7 @@ static inline bool is_bound(char c) {
 	    || c == '|'
 	    || c == ' '
 	    || c == '\t'
+	    || c == '\r'
 	    || c == '\n';
 }
 
@@ -118,7 +119,7 @@ static Expr* read_string(Buffer* b) {
 		assert(idx < 10240);
 
 		c = b_get(b);
-		if(c == '\0') return &EOI_STRING;
+		if(c == '\0') return (Expr*) &EOI_STRING;
 		if(c == '"') {
 			buf[idx] = '\0';
 			break;
@@ -126,7 +127,7 @@ static Expr* read_string(Buffer* b) {
 
 		if(c == '\\') {
 			c = b_get(b);
-			if(c == '\0') return &EOI_STRING;
+			if(c == '\0') return (Expr*) &EOI_STRING;
 
 			c = c == 'n' ? '\n' :
 			    c == 't' ? '\t' :
@@ -179,7 +180,7 @@ static Expr* read_num(Buffer* b, int sign) {
 		}
 
 		if(!isdigit(c)) {
-			return &NON_DIGIT;
+			return (Expr*) &NON_DIGIT;
 		}
 
 		if(!postDec) {
@@ -235,7 +236,7 @@ Expr* reade_list(Buffer* b) {
 			if(b_get(b) != ')') {
 				scm_stack_pop(&toRet);
 				scm_stack_pop(&read);
-				return &EXPECTED_RPAREN;
+				return (Expr*) &EXPECTED_RPAREN;
 			}
 			break;
 		} else if(b_peek(b) == ')') {
@@ -291,7 +292,7 @@ begin:
 		final = c == 't'  ? TRUE :
 			c == 'f'  ? FALSE :
 			c == '\\' ? read_char(b) :
-			            &AFTER_HASH;
+			            (Expr*) &AFTER_HASH;
 	} else if(cur == '\'') {
 		b_get(b);
 		final = reade(b);
@@ -304,14 +305,14 @@ begin:
 	} else if(!is_bound(cur) && !isdigit(cur)) {
 		final = read_symbol(b);
 	} else if(cur == ')') {
-		final = &UNEXPECTED_RPAREN;
+		final = (Expr*) &UNEXPECTED_RPAREN;
 	} else if(cur == '\0') {
-		final = &EOI;
+		final = (Expr*) &EOI;
 	} else if(cur == ';') {
 		b_eat_til_nextline(b);
 		goto begin;
 	} else {
-		final = &UNKNOWN;
+		final = (Expr*) &UNKNOWN;
 	}
 	
 	return final;

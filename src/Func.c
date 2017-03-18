@@ -689,11 +689,10 @@ static Expr* error(Expr* args) {
 }
 
 Expr* all_syms(Expr* args) {
-	(void)args;
 	return scm_all_symbols();
 }
 
-#define mk_ff(name, ptr) static Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
+#define mk_ff(name, ptr) static const Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
 
 mk_ff(NUMBER, number);
 mk_ff(INTEGER, integer);
@@ -745,7 +744,7 @@ mk_ff(ERRORF, error);
 
 mk_ff(ALLSYMS, all_syms);
 
-#define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), &oname)
+#define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), (Expr*) &oname)
 
 void scm_init_func() {
 	bind_ff("number?", NUMBER);

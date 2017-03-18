@@ -13,7 +13,7 @@ typedef struct Expr Expr;
 
 typedef Expr *(*ffunc)(Expr*);
 
-struct __attribute__((packed)) Expr {
+struct Expr {
 	union {
 		struct {
 			enum { INT, REAL, CHAR, STRING, SYMBOL, BOOL, ERROR, FFUNC } type;

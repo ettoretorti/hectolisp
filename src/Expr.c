@@ -8,17 +8,17 @@
 #include <string.h>
 #include <assert.h>
 
-static Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true, .mark = true };
-Expr* EMPTY_LIST = &_EMPTY_LIST;
+static const Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true, .mark = true };
+Expr* EMPTY_LIST;
 
-static Expr _TRUE = { .tag = ATOM, .atom = { .type = BOOL, .bval = true }, .protect = true, .mark = true };
-Expr* TRUE = &_TRUE;
+static const Expr _TRUE = { .tag = ATOM, .atom = { .type = BOOL, .bval = true }, .protect = true, .mark = true };
+Expr* TRUE;
 
-static Expr _FALSE = { .tag = ATOM, .atom = { .type = BOOL, .bval = false }, .protect = true, .mark = true };
-Expr* FALSE = &_FALSE;
+static const Expr _FALSE = { .tag = ATOM, .atom = { .type = BOOL, .bval = false }, .protect = true, .mark = true };
+Expr* FALSE;
 
-static Expr _OOM = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Out of memory" }, .protect = true, .mark = true };
-Expr* OOM = &_OOM;
+static const Expr _OOM = { .tag = ATOM, .atom = { .type = ERROR, .sval = "Out of memory" }, .protect = true, .mark = true };
+Expr* OOM;
 
 Expr* DEFINE = NULL;
 Expr* SET = NULL;
@@ -34,7 +34,7 @@ Expr* OR = NULL;
 // Keep a cache for characters since there are only 256 possible ones
 #define mk_chr(x) { .tag = ATOM, .atom = { .type = CHAR, .cval = (char)(x) }, .protect = true, .mark = true }
 
-static Expr allChars[256] = {
+static const Expr allChars[256] = {
 	mk_chr(0x00), mk_chr(0x01), mk_chr(0x02), mk_chr(0x03), mk_chr(0x04), mk_chr(0x05), mk_chr(0x06), mk_chr(0x07),
 	mk_chr(0x08), mk_chr(0x09), mk_chr(0x0A), mk_chr(0x0B), mk_chr(0x0C), mk_chr(0x0D), mk_chr(0x0E), mk_chr(0x0F),
 	mk_chr(0x10), mk_chr(0x11), mk_chr(0x12), mk_chr(0x13), mk_chr(0x14), mk_chr(0x15), mk_chr(0x16), mk_chr(0x17),
@@ -74,7 +74,7 @@ static Expr allChars[256] = {
 // Keep a cache of small positive integers for the same reason
 #define mk_int(x) { .tag = ATOM, .atom = { .type = INT, .cval = (x) }, .protect = true, .mark = true }
 
-static Expr someInts[32] = {
+static const Expr someInts[32] = {
 	mk_int(0x00), mk_int(0x01), mk_int(0x02), mk_int(0x03), mk_int(0x04), mk_int(0x05), mk_int(0x06), mk_int(0x07),
 	mk_int(0x08), mk_int(0x09), mk_int(0x0A), mk_int(0x0B), mk_int(0x0C), mk_int(0x0D), mk_int(0x0E), mk_int(0x0F),
 	mk_int(0x10), mk_int(0x11), mk_int(0x12), mk_int(0x13), mk_int(0x14), mk_int(0x15), mk_int(0x16), mk_int(0x17),
@@ -192,7 +192,7 @@ Expr* scm_cdr(const Expr* e) {
 
 Expr* scm_mk_int(long long v) {
 	if(0 <= v && v < (long long)(sizeof(someInts)/sizeof(someInts[0]))) {
-		return &someInts[v];
+		return (Expr*) &someInts[v];
 	}
 
 	Expr* toRet = scm_alloc();
@@ -218,7 +218,7 @@ Expr* scm_mk_real(double v) {
 
 
 Expr* scm_mk_char(char v) {
-	return &allChars[(unsigned)v];
+	return (Expr*) &allChars[(unsigned)v];
 }
 
 static char* strdup(const char* s) {
@@ -334,6 +334,10 @@ void scm_init_expr() {
 	ELSE = scm_get_symbol("else");
 	AND = scm_get_symbol("and");
 	OR = scm_get_symbol("or");
+	EMPTY_LIST = (Expr*) &_EMPTY_LIST;
+	TRUE = (Expr*) &_TRUE;
+	FALSE = (Expr*) &_FALSE;
+	OOM = (Expr*) &_OOM;
 }
 
 void scm_reset_expr() {
@@ -347,4 +351,8 @@ void scm_reset_expr() {
 	ELSE = NULL;
 	AND = NULL;
 	OR = NULL;
+	EMPTY_LIST = NULL;
+	TRUE = NULL;
+	FALSE = NULL;
+	OOM = NULL;
 }
