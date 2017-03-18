@@ -683,6 +683,10 @@ static Expr* error(Expr* args) {
 	return scm_mk_error(scm_sval(msg));
 }
 
+Expr* all_syms(Expr* args) {
+	return scm_all_symbols();
+}
+
 #define mk_ff(name, ptr) static Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
 
 mk_ff(NUMBER, number);
@@ -731,6 +735,8 @@ mk_ff(C_CODE, c_code);
 mk_ff(GC, gc);
 mk_ff(FREE_M, free_mem);
 mk_ff(ERRORF, error);
+
+mk_ff(ALLSYMS, all_syms);
 
 #define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), &oname)
 
@@ -781,4 +787,6 @@ void scm_init_func() {
 	bind_ff("compound-procedure?", C_PROC);
 	bind_ff("closure-args", C_ARGS);
 	bind_ff("closure-code", C_CODE);
+
+	bind_ff("all-syms", ALLSYMS);
 }

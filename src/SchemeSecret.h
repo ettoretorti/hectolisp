@@ -56,6 +56,7 @@ void scm_reset_expr();
 //Symbols
 Expr* scm_get_symbol(const char* s);
 void scm_reset_symbol_set();
+Expr* scm_all_symbols();
 
 //Functions
 void scm_init_func();

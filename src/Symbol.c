@@ -182,6 +182,24 @@ Expr* scm_get_symbol(const char* s) {
 	return res;
 }
 
+static void traverse(Expr** dst, AVL* head) {
+	if(head == NULL) return;
+	
+	traverse(dst, head->r);
+	*dst = scm_mk_pair(head->v, *dst);
+	traverse(dst, head->l);
+}
+
+Expr* scm_all_symbols() {
+	Expr* toRet = EMPTY_LIST;
+	scm_stack_push(&toRet);
+
+	traverse(&toRet, symbols);
+
+	scm_stack_pop(&toRet);
+	return toRet;
+}
+
 void scm_reset_symbol_set() {
 	avl_free(symbols);
 	symbols = NULL;
