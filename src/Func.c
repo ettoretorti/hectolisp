@@ -669,6 +669,11 @@ static Expr* free_mem(Expr* args) {
 	return toRet ? toRet : OOM;
 }
 
+static Expr* gc_runs(Expr* args) {
+	(void)args;
+	return scm_mk_int(scm_gc_runs());
+}
+
 static Expr* error(Expr* args) {
 	assert(args);
 
@@ -684,6 +689,7 @@ static Expr* error(Expr* args) {
 }
 
 Expr* all_syms(Expr* args) {
+	(void)args;
 	return scm_all_symbols();
 }
 
@@ -734,6 +740,7 @@ mk_ff(C_CODE, c_code);
 
 mk_ff(GC, gc);
 mk_ff(FREE_M, free_mem);
+mk_ff(GC_RUNS, gc_runs);
 mk_ff(ERRORF, error);
 
 mk_ff(ALLSYMS, all_syms);
@@ -780,6 +787,7 @@ void scm_init_func() {
 
 	bind_ff("gc", GC);
 	bind_ff("free-mem", FREE_M);
+	bind_ff("gc-runs", GC_RUNS);
 	bind_ff("error", ERRORF);
 
 	bind_ff("procedure?", PROC);
