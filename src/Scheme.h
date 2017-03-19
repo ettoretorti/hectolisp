@@ -102,8 +102,6 @@ int scm_list_len(Expr* l); // returns -1 when not given a proper list
 
 // MEMORY MANAGEMENT
 void scm_gc();
-void scm_protect(Expr* e);
-void scm_unprotect(Expr* e);
 
 void scm_stack_push(Expr** e);
 void scm_stack_pop(Expr** e);
