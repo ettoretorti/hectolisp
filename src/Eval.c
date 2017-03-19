@@ -3,6 +3,8 @@
 
 #include <assert.h>
 
+static Expr* stc_eval(Expr* e);
+
 static bool is_tpair(Expr* e, Expr* tag) {
 	assert(e); assert(tag); assert(scm_is_symbol(tag));
 
@@ -11,7 +13,7 @@ static bool is_tpair(Expr* e, Expr* tag) {
 
 static inline bool is_last(Expr* l) {
 	assert(scm_is_pair(l));
-	
+
 	return !scm_is_pair(scm_cdr(l));
 }
 
@@ -19,7 +21,7 @@ static Expr* save_eval(Expr* es) {
 	Expr* curEnv = CURRENT_ENV;
 	scm_stack_push(&curEnv);
 
-	Expr* res = scm_eval(es);
+	Expr* res = stc_eval(es);
 
 	CURRENT_ENV = curEnv;
 	scm_stack_pop(&curEnv);
@@ -71,24 +73,30 @@ static Expr* save_eval_all(Expr* es) {
 	Expr* cur = head;
 
 	while(scm_is_pair(es)) {
-		cur->pair.car = scm_eval(scm_car(es));
-		error_circuit(scm_car(cur));
+		cur->pair.car = stc_eval(scm_car(es));
+		if(scm_is_error(scm_car(cur))) {
+			scm_stack_pop(&head); scm_stack_pop(&curEnv); CURRENT_ENV = curEnv;
+			return scm_car(cur);
+		}
 
 		if(scm_is_pair(scm_cdr(es))) {
 			cur->pair.cdr = scm_mk_pair(EMPTY_LIST, EMPTY_LIST);
-			if(!cur->pair.cdr) return OOM;
+			if(!cur->pair.cdr) {
+				scm_stack_pop(&head); scm_stack_pop(&curEnv); CURRENT_ENV = curEnv;
+				return OOM;
+			}
 			cur = scm_cdr(cur);
 		}
 
 		es = scm_cdr(es);
-		
+
 		CURRENT_ENV = curEnv;
 	}
 
 	if(es != EMPTY_LIST) {
 		return scm_mk_error("arguments aren't a proper list");
 	}
-	
+
 	scm_stack_pop(&head);
 	scm_stack_pop(&curEnv);
 
@@ -104,7 +112,7 @@ static Expr* save_eval_all(Expr* es) {
 	{ Expr* TmP = expr; \
 	  if(scm_is_error(TmP)) { scm_stack_pop(&e); return TmP; } }
 
-Expr* scm_eval(Expr* e) {
+static Expr* stc_eval(Expr* e) {
 	scm_stack_push(&e);
 //just a tail call
 begin:
@@ -146,14 +154,14 @@ begin:
 				return scm_mk_error("Incorrect number of args to if (expected 3)");
 		} else if(is_tpair(e, BEGIN)) {
 			e = scm_cdr(e);
-			
+
 			while(scm_is_pair(e) && scm_cdr(e) != EMPTY_LIST) {
 				Expr* res = save_eval(scm_car(e));
 				error_circuit(res);
 
 				e = scm_cdr(e);
 			}
-			
+
 			if(!scm_is_pair(e) || scm_cdr(e) != EMPTY_LIST) {
 				scm_stack_pop(&e);
 				return scm_mk_error("sequence of expressions to evaluate isn't a proper list");
@@ -214,7 +222,7 @@ begin:
 					return scm_mk_error("name for defined function is not a symbol");
 				}
 
-				Expr* closure = scm_eval(def2lambda(e));
+				Expr* closure = stc_eval(def2lambda(e));
 				error_circuit(closure);
 				scm_stack_push(&closure);
 				Expr* res = scm_env_define(CURRENT_ENV, name, closure);
@@ -241,7 +249,7 @@ begin:
 			return res;
 		} else if(is_tpair(e, SET)) {
 			e = scm_cdr(e);
-			
+
 			if(!scm_is_pair(e) || !scm_is_symbol(scm_car(e)) || !scm_is_pair(scm_cdr(e)) || scm_cddr(e) != EMPTY_LIST) {
 				scm_stack_pop(&e);
 				return scm_mk_error("Malformed set!");
@@ -250,7 +258,7 @@ begin:
 			Expr* name = scm_car(e);
 			Expr* val = save_eval(scm_cadr(e));
 			error_circuit(val);
-			
+
 			scm_stack_push(&val);
 			Expr* res = scm_env_set(CURRENT_ENV, name, val);
 			scm_stack_pop(&val);
@@ -263,7 +271,7 @@ begin:
 				scm_stack_pop(&e);
 				return TRUE;
 			}
-			
+
 			while(!is_last(e)) {
 				Expr* v = save_eval(scm_car(e));
 				error_circuit(v);
@@ -280,7 +288,7 @@ begin:
 				scm_stack_pop(&e);
 				return scm_mk_error("arguments to and aren't a proper list");
 			}
-			
+
 			e = scm_car(e);
 			goto begin;
 		} else if(is_tpair(e, OR)) {
@@ -289,7 +297,7 @@ begin:
 				scm_stack_pop(&e);
 				return FALSE;
 			}
-			
+
 			while(!is_last(e)) {
 				Expr* v = save_eval(scm_car(e));
 				error_circuit(v);
@@ -306,13 +314,13 @@ begin:
 				scm_stack_pop(&e);
 				return scm_mk_error("arguments to or aren't a proper list");
 			}
-			
+
 			e = scm_car(e);
 			goto begin;
 		} else if(is_tpair(e, LAMBDA)) {
 			// (lambda (the arg list) body)
 			e = scm_cdr(e);
-			
+
 			if(!scm_is_pair(e)) {
 				scm_stack_pop(&e);
 				return scm_mk_error("missing argument list to lambda");
@@ -339,7 +347,10 @@ begin:
 			scm_stack_push(&func);
 
 			Expr* args = save_eval_all(scm_cdr(e));
-			error_circuit(args);
+			if(scm_is_error(args)) {
+				scm_stack_pop(&func); scm_stack_pop(&e);
+				return args;
+			}
 			scm_stack_push(&args);
 
 			if(scm_is_ffunc(func)) {
@@ -350,7 +361,7 @@ begin:
 				scm_stack_pop(&e);
 				return toRet;
 			}
-			
+
 			if(!scm_is_closure(func)) {
 				scm_stack_pop(&args); scm_stack_pop(&func); scm_stack_pop(&e);
 				return scm_mk_error("can't evaluate (not a ffunc or closure)");
@@ -363,19 +374,23 @@ begin:
 			//TODO check args are the same length as anames
 
 			Expr* newEnv = scm_mk_env(cenv, anames, args);
-			error_circuit(newEnv);
-			CURRENT_ENV = newEnv;
-
-			scm_stack_pop(&args);
+			if(scm_is_error(newEnv)) {
+				scm_stack_pop(&args); scm_stack_pop(&func); scm_stack_pop(&e);
+				return newEnv;
+			}
+			scm_stack_push(&newEnv);
 
 			e = scm_mk_pair(BEGIN, body);
 
+			scm_stack_pop(&newEnv);
+			scm_stack_pop(&args);
 			scm_stack_pop(&func);
 
 			if(!e) {
 				scm_stack_pop(&e);
 				return OOM;
 			}
+			CURRENT_ENV = newEnv;
 			goto begin;
 		}
 
@@ -394,4 +409,9 @@ begin:
 		scm_stack_pop(&e);
 		return e;
 	}
+}
+
+Expr* scm_eval(Expr* e) {
+	assert(e);
+	return save_eval(e);
 }
