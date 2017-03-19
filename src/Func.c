@@ -689,7 +689,18 @@ static Expr* error(Expr* args) {
 }
 
 Expr* all_syms(Expr* args) {
+	(void)args;
 	return scm_all_symbols();
+}
+
+Expr* base_env(Expr* args) {
+	(void)args;
+	return BASE_ENV;
+}
+
+Expr* cur_env(Expr* args) {
+	(void)args;
+	return CURRENT_ENV;
 }
 
 #define mk_ff(name, ptr) static const Expr name = { .tag = ATOM, .atom = { .type = FFUNC, .ffptr = ptr }, .protect = true, .mark = true }
@@ -743,6 +754,8 @@ mk_ff(GC_RUNS, gc_runs);
 mk_ff(ERRORF, error);
 
 mk_ff(ALLSYMS, all_syms);
+mk_ff(CURENV, cur_env);
+mk_ff(BASEENV, base_env);
 
 #define bind_ff(name, oname) scm_env_define(BASE_ENV, scm_mk_symbol(name), (Expr*) &oname)
 
@@ -796,4 +809,6 @@ void scm_init_func() {
 	bind_ff("closure-code", C_CODE);
 
 	bind_ff("all-syms", ALLSYMS);
+	bind_ff("cur-env", CURENV);
+	bind_ff("base-env", BASEENV);
 }
