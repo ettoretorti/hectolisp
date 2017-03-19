@@ -332,6 +332,78 @@ static Expr* sub(Expr* args) {
 	return exact ? scm_mk_int(lbuf) : scm_mk_real(dbuf);
 }
 
+static Expr* mul(Expr* args) {
+	assert(args);
+
+	double dbuf = 1.0;
+	long long lbuf = 1;
+	bool exact = true;
+
+	while(scm_is_pair(args)) {
+		Expr* cur = scm_car(args);
+		if(scm_is_int(cur)) {
+			lbuf *= scm_ival(cur);
+			dbuf *= scm_ival(cur);
+		} else if(scm_is_real(cur)) {
+			exact = false;
+			dbuf *= scm_rval(cur);
+		} else {
+			return scm_mk_error("Wrong type of argument to *");
+		}
+		args = scm_cdr(args);
+	}
+
+	if(args != EMPTY_LIST) {
+		return scm_mk_error("args to * aren't a proper list");
+	}
+
+
+	return exact ? scm_mk_int(lbuf) : scm_mk_real(dbuf);
+}
+
+static Expr* div(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("no arguments passed to / (expected at least 1)");
+
+	// unary case
+	if(scm_cdr(args) == EMPTY_LIST) {
+		Expr* v = scm_car(args);
+
+		if(scm_is_int(v)) return scm_mk_real(1.0 / scm_ival(v));
+		if(scm_is_real(v)) return scm_mk_real(1.0 / scm_rval(v));
+
+		return scm_mk_error("wrong type of argument to /");
+	}
+
+	Expr* first = scm_car(args);
+	if(!scm_is_num(first)) return scm_mk_error("wrong type of argument to /");
+
+	bool exact = scm_is_int(first);
+	double dbuf = exact ? scm_ival(first) : scm_rval(first);
+
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		Expr* cur = scm_car(args);
+		if(scm_is_int(cur)) {
+			dbuf /= scm_ival(cur);
+		} else if(scm_is_real(cur)) {
+			dbuf /= scm_rval(cur);
+		} else {
+			return scm_mk_error("Wrong type of argument to /");
+		}
+		args = scm_cdr(args);
+	}
+
+	if(args != EMPTY_LIST) {
+		return scm_mk_error("args to / aren't a proper list");
+	}
+
+
+	return scm_mk_real(dbuf);
+}
+
 // Pair operations
 
 static Expr* pair(Expr* args) {
@@ -565,7 +637,7 @@ static Expr* mk_str(Expr* args) {
 	}
 
 	memset(buf, c, size);
-	buf[size+1] = '\0';
+	buf[size] = '\0';
 
 	toRet->tag = ATOM;
 	toRet->atom.type = STRING;
@@ -725,6 +797,8 @@ mk_ff(EQV, eqv);
 mk_ff(NUM_EQ, num_eq);
 mk_ff(ADD, add);
 mk_ff(SUB, sub);
+mk_ff(MUL, mul);
+mk_ff(DIV, div);
 
 mk_ff(PAIRR, pair);
 mk_ff(CAR, car);
@@ -780,6 +854,8 @@ void scm_init_func() {
 	bind_ff("=", NUM_EQ);
 	bind_ff("+", ADD);
 	bind_ff("-", SUB);
+	bind_ff("*", MUL);
+	bind_ff("/", DIV);
 
 	bind_ff("pair?", PAIRR);
 	bind_ff("car", CAR);

@@ -9,6 +9,7 @@
 #include "SchemeSecret.h"
 
 #include <assert.h>
+#include <string.h>
 
 Expr* BASE_ENV = NULL;
 Expr* CURRENT_ENV = NULL;
@@ -51,7 +52,7 @@ static Expr* replace(int idx, Expr* list, Expr* val) {
 	}
 
 	assert(idx == 0);
-	
+
 	Expr* toRet = scm_car(list);
 	list->pair.car = val;
 	return toRet;
@@ -59,7 +60,7 @@ static Expr* replace(int idx, Expr* list, Expr* val) {
 
 Expr* scm_env_lookup(Expr* env, Expr* sym) {
 	assert(env); assert(sym); assert(scm_is_symbol(sym));
-	
+
 	while(env != FALSE) {
 		Expr* names = scm_cadr(env);
 		int idx = idxOf(sym, names);
@@ -67,11 +68,16 @@ Expr* scm_env_lookup(Expr* env, Expr* sym) {
 		if(idx != -1) {
 			return get(scm_caddr(env), idx);
 		}
-		
+
 		env = scm_car(env);
 	}
-	
-	return scm_mk_error("Can't get unbound symbol");
+
+	char buf[256];
+	buf[0] = '\0';
+	strcat(buf, "can't get unbound symbol: ");
+	strcat(buf, scm_sval(sym));
+
+	return scm_mk_error(buf);
 }
 
 Expr* scm_env_define(Expr* env, Expr* sym, Expr* val) {
@@ -102,7 +108,12 @@ Expr* scm_env_set(Expr* env, Expr* sym, Expr* val) {
 		env = scm_car(env);
 	}
 
-	return scm_mk_error("Can't set unbound symbol");
+	char buf[256];
+	buf[0] = '\0';
+	strcat(buf, "Can't set unbound symbol: ");
+	strcat(buf, scm_sval(sym));
+
+	return scm_mk_error(buf);
 }
 
 Expr* scm_mk_env(Expr* parent, Expr* names, Expr* vals) {
