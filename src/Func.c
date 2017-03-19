@@ -200,10 +200,10 @@ static Expr* num_eq(Expr* args) {
 	assert(args);
 
 	if(args == EMPTY_LIST) return TRUE;
-	
+
 	Expr* cur = scm_car(args);
 	checknum(cur);
-	
+
 	bool eq = true;
 	bool exact = scm_is_int(cur);
 	long long ex;
@@ -215,7 +215,7 @@ static Expr* num_eq(Expr* args) {
 	} else {
 		in = scm_rval(cur);
 		ex = in;
-		
+
 		exact = ((double)ex) == in;
 	}
 
@@ -255,6 +255,151 @@ static Expr* num_eq(Expr* args) {
 
 #undef checknum
 
+//TODO fix all these comparison functions to handle exact/inexact numbers
+
+#define checknum(x) if(!scm_is_num(x)) return scm_mk_error("< expects only numbers")
+
+static Expr* num_lt(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return TRUE;
+
+	Expr* cur = scm_car(args);
+	checknum(cur);
+
+	bool ok = true;
+	double curVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		cur = scm_car(args);
+		checknum(cur);
+
+		double newVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+
+		if(newVal <= curVal) {
+			ok = false;
+			break;
+		}
+		curVal = newVal;
+
+		args = scm_cdr(args);
+	}
+
+	if(ok && args != EMPTY_LIST) return scm_mk_error("arguments to < aren't a proper list");
+
+	return ok ? TRUE : FALSE;
+}
+
+#undef checknum
+
+#define checknum(x) if(!scm_is_num(x)) return scm_mk_error("> expects only numbers")
+
+static Expr* num_gt(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return TRUE;
+
+	Expr* cur = scm_car(args);
+	checknum(cur);
+
+	bool ok = true;
+	double curVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		cur = scm_car(args);
+		checknum(cur);
+
+		double newVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+
+		if(newVal >= curVal) {
+			ok = false;
+			break;
+		}
+		curVal = newVal;
+
+		args = scm_cdr(args);
+	}
+
+	if(ok && args != EMPTY_LIST) return scm_mk_error("arguments to > aren't a proper list");
+
+	return ok ? TRUE : FALSE;
+}
+
+#undef checknum
+
+#define checknum(x) if(!scm_is_num(x)) return scm_mk_error(">= expects only numbers")
+
+static Expr* num_gte(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return TRUE;
+
+	Expr* cur = scm_car(args);
+	checknum(cur);
+
+	bool ok = true;
+	double curVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		cur = scm_car(args);
+		checknum(cur);
+
+		double newVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+
+		if(newVal > curVal) {
+			ok = false;
+			break;
+		}
+		curVal = newVal;
+
+		args = scm_cdr(args);
+	}
+
+	if(ok && args != EMPTY_LIST) return scm_mk_error("arguments to >= aren't a proper list");
+
+	return ok ? TRUE : FALSE;
+}
+
+#undef checknum
+
+#define checknum(x) if(!scm_is_num(x)) return scm_mk_error("<= expects only numbers")
+
+static Expr* num_lte(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return TRUE;
+
+	Expr* cur = scm_car(args);
+	checknum(cur);
+
+	bool ok = true;
+	double curVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+	args = scm_cdr(args);
+
+	while(scm_is_pair(args)) {
+		cur = scm_car(args);
+		checknum(cur);
+
+		double newVal = scm_is_int(cur) ? scm_ival(cur) : scm_rval(cur);
+
+		if(newVal < curVal) {
+			ok = false;
+			break;
+		}
+		curVal = newVal;
+
+		args = scm_cdr(args);
+	}
+
+	if(ok && args != EMPTY_LIST) return scm_mk_error("arguments to <= aren't a proper list");
+
+	return ok ? TRUE : FALSE;
+}
+
+#undef checknum
 // Numerical operations
 
 static Expr* add(Expr* args) {
@@ -793,6 +938,10 @@ mk_ff(NOT, not);
 
 mk_ff(EQ, eq);
 mk_ff(EQV, eqv);
+mk_ff(LT, num_lt);
+mk_ff(LTE, num_lte);
+mk_ff(GT, num_gt);
+mk_ff(GTE, num_gte);
 
 mk_ff(NUM_EQ, num_eq);
 mk_ff(ADD, add);
@@ -852,6 +1001,10 @@ void scm_init_func() {
 	bind_ff("eqv?", EQV);
 	
 	bind_ff("=", NUM_EQ);
+	bind_ff("<", LT);
+	bind_ff("<=", LTE);
+	bind_ff(">", GT);
+	bind_ff(">=", GTE);
 	bind_ff("+", ADD);
 	bind_ff("-", SUB);
 	bind_ff("*", MUL);
