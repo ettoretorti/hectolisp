@@ -581,6 +581,36 @@ static Expr* cdr(Expr* args) {
 	return scm_cdr(arg);
 }
 
+static Expr* set_car(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 2) return scm_mk_error("set-car! expects 2 arguments");
+
+	Expr* arg = scm_car(args);
+	if(!scm_is_pair(arg)) return scm_mk_error("first arg to set-car! must be a pair");
+
+	Expr* val = scm_cadr(args);
+
+	arg->pair.car = val;
+
+	return EMPTY_LIST;
+}
+
+static Expr* set_cdr(Expr* args) {
+	assert(args);
+
+	if(scm_list_len(args) != 2) return scm_mk_error("set-cdr! expects 2 arguments");
+
+	Expr* arg = scm_car(args);
+	if(!scm_is_pair(arg)) return scm_mk_error("first arg to set-cdr! must be a pair");
+
+	Expr* val = scm_cadr(args);
+
+	arg->pair.cdr = val;
+
+	return EMPTY_LIST;
+}
+
 static Expr* cons(Expr* args) {
 	assert(args);
 	
@@ -954,6 +984,8 @@ mk_ff(CAR, car);
 mk_ff(CDR, cdr);
 mk_ff(CONS, cons);
 mk_ff(LIST, list);
+mk_ff(SETCAR, set_car);
+mk_ff(SETCDR, set_cdr);
 
 mk_ff(ISSTR, is_str);
 mk_ff(STRNUL, str_null);
@@ -999,7 +1031,7 @@ void scm_init_func() {
 
 	bind_ff("eq?", EQ);
 	bind_ff("eqv?", EQV);
-	
+
 	bind_ff("=", NUM_EQ);
 	bind_ff("<", LT);
 	bind_ff("<=", LTE);
@@ -1015,6 +1047,8 @@ void scm_init_func() {
 	bind_ff("cdr", CDR);
 	bind_ff("cons", CONS);
 	bind_ff("list", LIST);
+	bind_ff("set-car!", SETCAR);
+	bind_ff("set-cdr!", SETCDR);
 
 	bind_ff("string?", ISSTR);
 	bind_ff("string-null?", STRNUL);
