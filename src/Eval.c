@@ -53,6 +53,107 @@ static Expr* def2lambda(Expr* defBody) {
 	return tmp;
 }
 
+// Requires that the two elements in dest are protected
+static bool decomposeBindings(Expr* bindings, Expr* dest[2]) {
+	assert(bindings); assert(dest);
+	if(bindings == EMPTY_LIST) {
+		dest[0] = dest[1] = EMPTY_LIST;
+		return true;
+	} else if(scm_is_pair(bindings)) {
+		if(!decomposeBindings(scm_cdr(bindings), dest)) return false;
+
+		Expr* curBinding = scm_car(bindings);
+		if(!scm_is_pair(curBinding)) return false;
+
+		Expr* name = scm_car(curBinding);
+		if(!scm_is_symbol(name)) return false;
+
+		Expr* val = scm_cdr(curBinding);
+		if(!scm_is_pair(val)) return false;
+		if(scm_cdr(val) != EMPTY_LIST) return false;
+
+		val = scm_car(val);
+
+		dest[0] = scm_mk_pair(name, dest[0]);
+		if(!dest[0]) {
+			dest[0] = EMPTY_LIST;
+			return false;
+		}
+
+		dest[1] = scm_mk_pair(val, dest[1]);
+		if(!dest[1]) {
+			dest[1] = EMPTY_LIST;
+			return false;
+		}
+
+		return true;
+	} else {
+		return false;
+	}
+}
+
+static Expr* namedlet2lambda(Expr* name, Expr* rest) {
+	return scm_mk_error("named let not yet supported");
+}
+
+static Expr* let2lambda(Expr* let) {
+	assert(let);
+	assert(scm_is_pair(let));
+	assert(scm_car(let) == LET);
+
+	Expr* next = scm_cdr(let);
+	if(!scm_is_pair(next)) {
+		return scm_mk_error("malformed let");
+	}
+	Expr* bindings = scm_car(next);
+	next = scm_cdr(next);
+
+	if(scm_is_symbol(bindings)) {
+		return namedlet2lambda(bindings, next);
+	}
+
+	if(!scm_is_pair(next)) {
+		return scm_mk_error("malformed let");
+	}
+
+	if(bindings == EMPTY_LIST) {
+		Expr* toRet = next;
+		scm_stack_push(&toRet);
+
+		Expr* ll[3] = { LAMBDA, EMPTY_LIST, next };
+		toRet = scm_concat(ll, 3);
+		toRet = scm_mk_list(&toRet, 1);
+
+		scm_stack_pop(&toRet);
+		return toRet;
+	}
+
+	if(!scm_is_pair(bindings)) {
+		return scm_mk_error("malformed let bindings");
+	}
+
+	Expr* decomp[2] = { EMPTY_LIST, EMPTY_LIST };
+	scm_stack_push(&decomp[0]);
+	scm_stack_push(&decomp[1]);
+
+	Expr* toRet = EMPTY_LIST;
+	scm_stack_push(&toRet);
+	if(!decomposeBindings(bindings, decomp)) {
+		toRet = scm_mk_error("malformed let bindings");
+	} else {
+		Expr* ll[3] = { LAMBDA, decomp[0], next };
+		toRet = scm_concat(ll, 3);
+		toRet = scm_mk_pair(toRet, decomp[1]);
+		toRet = toRet ? toRet : OOM;
+	}
+
+	scm_stack_pop(&toRet);
+	scm_stack_pop(&decomp[1]);
+	scm_stack_pop(&decomp[0]);
+
+	return toRet;
+}
+
 // short circuits errors up the call stack
 #define error_circuit(expr) \
 	{ Expr* TmP = expr; \
@@ -216,6 +317,9 @@ begin:
 			error:
 				scm_stack_pop(&e);
 				return scm_mk_error("Incorrect number of args to if (expected 3)");
+		} else if(is_tpair(e, LET)) {
+			e = let2lambda(e);
+			goto begin;
 		} else if(is_tpair(e, BEGIN)) {
 			e = scm_cdr(e);
 

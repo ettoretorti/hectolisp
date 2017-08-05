@@ -14,6 +14,7 @@ extern const unsigned scm_stdlib_len;
 extern Expr* DEFINE;
 extern Expr* SET;
 extern Expr* IF;
+extern Expr* LET;
 extern Expr* LAMBDA;
 extern Expr* QUOTE;
 extern Expr* QUASIQUOTE;

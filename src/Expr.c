@@ -23,6 +23,7 @@ Expr* OOM;
 Expr* DEFINE = NULL;
 Expr* SET = NULL;
 Expr* IF = NULL;
+Expr* LET = NULL;
 Expr* LAMBDA = NULL;
 Expr* QUOTE = NULL;
 Expr* QUASIQUOTE = NULL;
@@ -346,6 +347,7 @@ void scm_init_expr() {
 	DEFINE = scm_get_symbol("define");
 	SET = scm_get_symbol("set!");
 	IF = scm_get_symbol("if");
+	LET = scm_get_symbol("let");
 	LAMBDA = scm_get_symbol("lambda");
 	QUOTE = scm_get_symbol("quote");
 	QUASIQUOTE = scm_get_symbol("quasiquote");
@@ -365,6 +367,7 @@ void scm_reset_expr() {
 	DEFINE = NULL;
 	SET = NULL;
 	IF = NULL;
+	LET = NULL;
 	LAMBDA = NULL;
 	QUOTE = NULL;
 	QUASIQUOTE = NULL;
