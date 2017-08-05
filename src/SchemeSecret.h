@@ -16,6 +16,8 @@ extern Expr* SET;
 extern Expr* IF;
 extern Expr* LAMBDA;
 extern Expr* QUOTE;
+extern Expr* QUASIQUOTE;
+extern Expr* UNQUOTE;
 extern Expr* BEGIN;
 extern Expr* COND;
 extern Expr* ELSE;

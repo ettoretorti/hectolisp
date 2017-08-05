@@ -112,6 +112,58 @@ static Expr* save_eval_all(Expr* es) {
 	{ Expr* TmP = expr; \
 	  if(scm_is_error(TmP)) { scm_stack_pop(&e); return TmP; } }
 
+static Expr* quasi_eval(Expr* e, unsigned level) {
+	if(is_tpair(e, QUASIQUOTE)) {
+		Expr* rest = scm_cdr(e);
+		if(!scm_is_pair(rest)) {
+			return scm_mk_error("Lonely nested quasiquote");
+		}
+
+		Expr* res =  quasi_eval(scm_car(rest), level + 1);
+		scm_stack_push(&res);
+		res = scm_mk_pair(res, EMPTY_LIST);
+		res = scm_mk_pair(QUASIQUOTE, res);
+		scm_stack_pop(&res);
+
+		return res;
+	} else if(is_tpair(e, UNQUOTE)) {
+		Expr* rest = scm_cdr(e);
+		if(!scm_is_pair(rest)) {
+			return scm_mk_error("Lonely unquote");
+		}
+
+		if(level == 0) {
+			return save_eval(scm_car(rest));
+		} else {
+			Expr* res = quasi_eval(scm_car(rest), level - 1);
+			scm_stack_push(&res);
+			res = scm_mk_pair(res, EMPTY_LIST);
+			res = scm_mk_pair(UNQUOTE, res);
+			scm_stack_pop(&res);
+
+			return res;
+		}
+	} else if(scm_is_pair(e)) {
+		Expr* car = scm_car(e);
+		Expr* cdr = scm_cdr(e);
+
+		scm_stack_push(&car);
+		scm_stack_push(&cdr);
+
+		car = quasi_eval(car, level);
+		cdr = quasi_eval(cdr, level);
+
+		Expr* toRet = scm_mk_pair(car, cdr);
+
+		scm_stack_pop(&cdr);
+		scm_stack_pop(&car);
+
+		return toRet;
+	} else {
+		return e;
+	}
+}
+
 static Expr* stc_eval(Expr* e) {
 	scm_stack_push(&e);
 //just a tail call
@@ -122,6 +174,17 @@ begin:
 		if(is_tpair(e, QUOTE)) {
 			scm_stack_pop(&e);
 			return scm_cadr(e);
+		} else if(is_tpair(e, QUASIQUOTE)) {
+			Expr* rest = scm_cdr(e);
+			if(!scm_is_pair(rest)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("Lonely quasiquote");
+			}
+
+			Expr* toRet = quasi_eval(scm_car(rest), 0);
+			scm_stack_pop(&e);
+
+			return toRet;
 		} else if(is_tpair(e, IF)) {
 			//(if predicate consequent alternative)
 			//ensure list length is correct, error out otherwise

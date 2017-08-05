@@ -299,7 +299,25 @@ begin:
 		if(!scm_is_error(final)) {
 			scm_stack_push(&final);
 			Expr* ll[2] = { QUOTE, final };
-			final = scm_mk_list(ll, 2);;
+			final = scm_mk_list(ll, 2);
+			scm_stack_pop(&final);
+		}
+	} else if(cur == '`') {
+		b_get(b);
+		final = reade(b);
+		if(!scm_is_error(final)) {
+			scm_stack_push(&final);
+			Expr* ll[2] = { QUASIQUOTE, final };
+			final = scm_mk_list(ll, 2);
+			scm_stack_pop(&final);
+		}
+	} else if(cur == ',') {
+		b_get(b);
+		final = reade(b);
+		if(!scm_is_error(final)) {
+			scm_stack_push(&final);
+			Expr* ll[2] = { UNQUOTE, final };
+			final = scm_mk_list(ll, 2);
 			scm_stack_pop(&final);
 		}
 	} else if(!is_bound(cur) && !isdigit(cur)) {

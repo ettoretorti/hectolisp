@@ -25,6 +25,8 @@ Expr* SET = NULL;
 Expr* IF = NULL;
 Expr* LAMBDA = NULL;
 Expr* QUOTE = NULL;
+Expr* QUASIQUOTE = NULL;
+Expr* UNQUOTE = NULL;
 Expr* BEGIN = NULL;
 Expr* COND = NULL;
 Expr* ELSE = NULL;
@@ -329,6 +331,8 @@ void scm_init_expr() {
 	IF = scm_get_symbol("if");
 	LAMBDA = scm_get_symbol("lambda");
 	QUOTE = scm_get_symbol("quote");
+	QUASIQUOTE = scm_get_symbol("quasiquote");
+	UNQUOTE = scm_get_symbol("unquote");
 	BEGIN = scm_get_symbol("begin");
 	COND = scm_get_symbol("cond");
 	ELSE = scm_get_symbol("else");
@@ -346,6 +350,8 @@ void scm_reset_expr() {
 	IF = NULL;
 	LAMBDA = NULL;
 	QUOTE = NULL;
+	QUASIQUOTE = NULL;
+	UNQUOTE = NULL;
 	BEGIN = NULL;
 	COND = NULL;
 	ELSE = NULL;

@@ -65,6 +65,33 @@ TEST(Eval, Quotes) {
 	scm_reset();
 }
 
+TEST(Eval, Quasiquotes) {
+	scm_init();
+	char* s;
+
+	s = scm_print(scm_eval(scm_read("`(list ,(+ 1 2) 4)")));
+	EXPECT_STREQ("(list 3 4)", s);
+	free(s);
+
+	s = scm_print(scm_eval(scm_read("`,(+ 2 3)")));
+	EXPECT_STREQ("5", s);
+	free(s);
+
+	s = scm_print(scm_eval(scm_read("`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)")));
+	EXPECT_STREQ("(a (quasiquote (b (unquote (+ 1 2)) (unquote (foo 4 d)) e)) f)", s);
+	free(s);
+
+	s = scm_print(scm_eval(scm_read("(quasiquote (list (unquote (+ 1 2)) 4))")));
+	EXPECT_STREQ("(list 3 4)", s);
+	free(s);
+
+	s = scm_print(scm_eval(scm_read("'(quasiquote (list (unquote (+ 1 2)) 4))")));
+	EXPECT_STREQ("(quasiquote (list (unquote (+ 1 2)) 4))", s);
+	free(s);
+
+	scm_reset();
+}
+
 TEST(Eval, And) {
 	scm_init();
 	char* s;
