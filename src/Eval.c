@@ -391,9 +391,9 @@ begin:
 			}
 
 			Expr* args = scm_car(e);
-			if(!scm_is_pair(args) && args != EMPTY_LIST) {
+			if(!scm_is_pair(args) && !scm_is_symbol(args) && args != EMPTY_LIST) {
 				scm_stack_pop(&e);
-				return scm_mk_error("lambda arguments aren't in a list");
+				return scm_mk_error("lambda arguments aren't in a list and aren't a single symbol");
 			}
 
 			Expr* body = scm_cdr(e);
@@ -435,9 +435,26 @@ begin:
 			Expr* anames = scm_closure_args(func);
 			Expr* body = scm_closure_body(func);
 
-			//TODO check args are the same length as anames
+			Expr* newEnv = NULL;
+			if(scm_is_pair(anames)) {
+				size_t nlen = scm_list_len(anames);
+				size_t alen = scm_list_len(args);
+				newEnv = nlen == alen ? scm_mk_env(cenv, anames, args) : scm_mk_error("incorrect number of args to procedure");
+			} else {
+				Expr* argname = EMPTY_LIST;
+				Expr* flatargs = EMPTY_LIST;
+				scm_stack_push(&argname);
+				scm_stack_push(&flatargs);
 
-			Expr* newEnv = scm_mk_env(cenv, anames, args);
+				argname = scm_mk_pair(anames, EMPTY_LIST);
+				flatargs = scm_mk_pair(args, EMPTY_LIST);
+
+				newEnv = !(argname && flatargs) ? OOM : scm_mk_env(cenv, argname, flatargs);
+
+				scm_stack_pop(&flatargs);
+				scm_stack_pop(&argname);
+			}
+
 			if(scm_is_error(newEnv)) {
 				scm_stack_pop(&args); scm_stack_pop(&func); scm_stack_pop(&e);
 				return newEnv;
