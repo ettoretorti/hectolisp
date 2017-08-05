@@ -284,6 +284,23 @@ Expr* scm_mk_list(Expr** l, size_t n) {
 	return toRet ? toRet : OOM;
 }
 
+Expr* scm_concat(Expr** l, size_t n) {
+	if(n == 0) return EMPTY_LIST;
+
+	Expr* toRet = l[n-1];
+	scm_stack_push(&toRet);
+
+	n--;
+	while(toRet && n != 0) {
+		toRet = scm_mk_pair(l[n-1], toRet);
+		n--;
+	}
+
+	scm_stack_pop(&toRet);
+
+	return toRet ? toRet : OOM;
+}
+
 Expr* scm_mk_closure(Expr* penv, Expr* args, Expr* body) {
 	assert(penv);
 	assert(args);
