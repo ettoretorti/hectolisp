@@ -40,7 +40,7 @@ static Expr* get(Expr* list, int idx) {
 
 	assert(idx == 0);
 
-	return scm_car(list);
+	return scm_is_pair(list) ? scm_car(list) : NULL;
 }
 
 static Expr* replace(int idx, Expr* list, Expr* val) {
@@ -66,7 +66,8 @@ Expr* scm_env_lookup(Expr* env, Expr* sym) {
 		int idx = idxOf(sym, names);
 
 		if(idx != -1) {
-			return get(scm_caddr(env), idx);
+			Expr* res = get(scm_caddr(env), idx);
+			if(res) return res;
 		}
 
 		env = scm_car(env);
