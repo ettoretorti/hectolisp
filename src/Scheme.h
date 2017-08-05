@@ -32,7 +32,7 @@ struct Expr {
 			struct Expr* cdr;
 		} pair;
 	};
-	enum { ATOM, PAIR, CLOSURE } tag : 2;
+	enum { ATOM, PAIR, CLOSURE, ELIST } tag : 2;
 	bool protect : 1;
 	bool mark : 1;
 };

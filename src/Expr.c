@@ -8,7 +8,7 @@
 #include <string.h>
 #include <assert.h>
 
-static const Expr _EMPTY_LIST = { .tag = PAIR, .pair = { NULL, NULL }, .protect = true, .mark = true };
+static const Expr _EMPTY_LIST = { .tag = ELIST, .pair = { NULL, NULL }, .protect = true, .mark = true };
 Expr* EMPTY_LIST;
 
 static const Expr _TRUE = { .tag = ATOM, .atom = { .type = BOOL, .bval = true }, .protect = true, .mark = true };
@@ -92,7 +92,7 @@ bool scm_is_atom(const Expr* e) {
 }
 bool scm_is_pair(const Expr* e) {
 	assert(e);
-	return e != EMPTY_LIST && e->tag == PAIR;
+	return e->tag == PAIR;
 }
 bool scm_is_closure(const Expr* e) {
 	assert(e);
