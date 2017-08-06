@@ -277,6 +277,8 @@ static Expr* quasi_eval(Expr* e, unsigned level) {
 		}
 
 		Expr* res =  quasi_eval(scm_car(rest), level + 1);
+		if(scm_is_error(res)) return res;
+
 		scm_stack_push(&res);
 		Expr* ll[2] = { QUASIQUOTE, res };
 		res = scm_mk_list(ll, 2);
@@ -293,6 +295,8 @@ static Expr* quasi_eval(Expr* e, unsigned level) {
 			return save_eval(scm_car(rest));
 		} else {
 			Expr* res = quasi_eval(scm_car(rest), level - 1);
+			if(scm_is_error(res)) return res;
+
 			scm_stack_push(&res);
 			Expr* ll[2] = { UNQUOTE, res };
 			res = scm_mk_list(ll, 2);
@@ -309,7 +313,17 @@ static Expr* quasi_eval(Expr* e, unsigned level) {
 
 		bool splice = is_tpair(car, UNQUOTE_SPLICING);
 		car = quasi_eval(car, level);
+		if(scm_is_error(car)) {
+			scm_stack_pop(&cdr);
+			scm_stack_pop(&car);
+			return car;
+		}
 		cdr = quasi_eval(cdr, level);
+		if(scm_is_error(cdr)) {
+			scm_stack_pop(&cdr);
+			scm_stack_pop(&car);
+			return cdr;
+		}
 
 		Expr* toRet = splice ? scm_append(car, cdr) : scm_mk_pair(car, cdr);
 		toRet = toRet ? toRet : OOM;
