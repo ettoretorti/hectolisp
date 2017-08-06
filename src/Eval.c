@@ -260,15 +260,6 @@ static Expr* save_eval_all(Expr* es) {
 	return head;
 }
 
-#undef error_circuit
-
-
-// needs modification to deal with the tailcall cleanup
-// TODO STILL BROKEN IN CASES OTHER THINGS ARE STACKED FIRST
-#define error_circuit(expr) \
-	{ Expr* TmP = expr; \
-	  if(scm_is_error(TmP)) { scm_stack_pop(&e); return TmP; } }
-
 static Expr* quasi_eval(Expr* e, unsigned level) {
 	if(is_tpair(e, QUASIQUOTE)) {
 		Expr* rest = scm_cdr(e);
@@ -336,6 +327,14 @@ static Expr* quasi_eval(Expr* e, unsigned level) {
 		return e;
 	}
 }
+
+#undef error_circuit
+
+// needs modification to deal with the tailcall cleanup
+// TODO STILL BROKEN IN CASES OTHER THINGS ARE STACKED FIRST
+#define error_circuit(expr) \
+	{ Expr* TmP = expr; \
+	  if(scm_is_error(TmP)) { scm_stack_pop(&e); return TmP; } }
 
 static Expr* stc_eval(Expr* e) {
 	scm_stack_push(&e);
