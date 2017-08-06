@@ -302,6 +302,39 @@ Expr* scm_concat(Expr** l, size_t n) {
 	return toRet ? toRet : OOM;
 }
 
+static Expr* scm_reverse(Expr* l) {
+	Expr* toRet = EMPTY_LIST;
+	scm_stack_push(&toRet);
+
+	while(scm_is_pair(l)) {
+		toRet = scm_mk_pair(scm_car(l), toRet);
+		l = scm_cdr(l);
+		if(!toRet) break;
+	}
+
+	scm_stack_pop(&toRet);
+	return toRet ? toRet : OOM;
+}
+
+Expr* scm_append(Expr* l1, Expr* l2) {
+	if(l1 == EMPTY_LIST) return l2;
+	if(l2 == EMPTY_LIST) return l1;
+
+	Expr* rl1 = scm_reverse(l1);
+	if(scm_is_error(rl1)) return rl1;
+
+	scm_stack_push(&l2);
+	while(rl1 != EMPTY_LIST) {
+		Expr* cdr = scm_cdr(rl1);
+		rl1->pair.cdr = l2;
+		l2 = rl1;
+		rl1 = cdr;
+	}
+	scm_stack_pop(&l2);
+
+	return l2;
+}
+
 Expr* scm_mk_closure(Expr* penv, Expr* args, Expr* body) {
 	assert(penv);
 	assert(args);

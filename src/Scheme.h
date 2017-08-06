@@ -97,6 +97,7 @@ Expr* scm_mk_pair(Expr* car, Expr* cdr);
 // ADVANCED CONSTRUCTORS
 Expr* scm_mk_list(Expr** l, size_t n);
 Expr* scm_concat(Expr** l, size_t n);
+Expr* scm_append(Expr* l1, Expr* l2);
 
 // MISCELLANEOUS
 int scm_list_len(Expr* l); // returns -1 when not given a proper list
