@@ -28,6 +28,7 @@ Expr* LAMBDA = NULL;
 Expr* QUOTE = NULL;
 Expr* QUASIQUOTE = NULL;
 Expr* UNQUOTE = NULL;
+Expr* UNQUOTE_SPLICING = NULL;
 Expr* BEGIN = NULL;
 Expr* COND = NULL;
 Expr* ELSE = NULL;
@@ -385,6 +386,7 @@ void scm_init_expr() {
 	QUOTE = scm_get_symbol("quote");
 	QUASIQUOTE = scm_get_symbol("quasiquote");
 	UNQUOTE = scm_get_symbol("unquote");
+	UNQUOTE_SPLICING = scm_get_symbol("unquote-splicing");
 	BEGIN = scm_get_symbol("begin");
 	COND = scm_get_symbol("cond");
 	ELSE = scm_get_symbol("else");
@@ -405,6 +407,7 @@ void scm_reset_expr() {
 	QUOTE = NULL;
 	QUASIQUOTE = NULL;
 	UNQUOTE = NULL;
+	UNQUOTE_SPLICING = NULL;
 	BEGIN = NULL;
 	COND = NULL;
 	ELSE = NULL;

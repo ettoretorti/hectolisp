@@ -19,6 +19,7 @@ extern Expr* LAMBDA;
 extern Expr* QUOTE;
 extern Expr* QUASIQUOTE;
 extern Expr* UNQUOTE;
+extern Expr* UNQUOTE_SPLICING;
 extern Expr* BEGIN;
 extern Expr* COND;
 extern Expr* ELSE;

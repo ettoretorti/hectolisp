@@ -283,7 +283,7 @@ static Expr* quasi_eval(Expr* e, unsigned level) {
 		scm_stack_pop(&res);
 
 		return res;
-	} else if(is_tpair(e, UNQUOTE)) {
+	} else if(is_tpair(e, UNQUOTE) || is_tpair(e, UNQUOTE_SPLICING)) {
 		Expr* rest = scm_cdr(e);
 		if(!scm_is_pair(rest)) {
 			return scm_mk_error("Lonely unquote");
@@ -307,10 +307,11 @@ static Expr* quasi_eval(Expr* e, unsigned level) {
 		scm_stack_push(&car);
 		scm_stack_push(&cdr);
 
+		bool splice = is_tpair(car, UNQUOTE_SPLICING);
 		car = quasi_eval(car, level);
 		cdr = quasi_eval(cdr, level);
 
-		Expr* toRet = scm_mk_pair(car, cdr);
+		Expr* toRet = splice ? scm_append(car, cdr) : scm_mk_pair(car, cdr);
 		toRet = toRet ? toRet : OOM;
 
 		scm_stack_pop(&cdr);

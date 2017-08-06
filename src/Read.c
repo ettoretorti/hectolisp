@@ -313,10 +313,13 @@ begin:
 		}
 	} else if(cur == ',') {
 		b_get(b);
+		bool splicing = b_peek(b) == '@';
+		if(splicing) b_get(b);
+
 		final = reade(b);
 		if(!scm_is_error(final)) {
 			scm_stack_push(&final);
-			Expr* ll[2] = { UNQUOTE, final };
+			Expr* ll[2] = { splicing ? UNQUOTE_SPLICING : UNQUOTE, final };
 			final = scm_mk_list(ll, 2);
 			scm_stack_pop(&final);
 		}
