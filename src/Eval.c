@@ -93,7 +93,63 @@ static bool decomposeBindings(Expr* bindings, Expr* dest[2]) {
 }
 
 static Expr* namedlet2lambda(Expr* name, Expr* rest) {
-	return scm_mk_error("named let not yet supported");
+	if(!scm_is_pair(rest)) {
+		return scm_mk_error("malformed named let");
+	}
+	Expr* bindings = scm_car(rest);
+	rest = scm_cdr(rest);
+	if(!scm_is_pair(rest)) {
+		return scm_mk_error("malformed named let body");
+	}
+
+	Expr* decomp[2] = { EMPTY_LIST, EMPTY_LIST };
+	scm_stack_push(&decomp[0]);
+	scm_stack_push(&decomp[1]);
+
+	Expr* toRet = EMPTY_LIST;
+	scm_stack_push(&toRet);
+	if(!decomposeBindings(bindings, decomp)) {
+		toRet = scm_mk_error("malformed named let bindings");
+	} else {
+		Expr* ll[4];
+
+		Expr* call = EMPTY_LIST;
+		scm_stack_push(&call);
+		ll[0] = name;
+		ll[1] = decomp[1];
+		call = scm_concat(ll, 2);
+
+		Expr* inlambda = EMPTY_LIST;
+		scm_stack_push(&inlambda);
+		ll[0] = LAMBDA;
+		ll[1] = decomp[0];
+		ll[2] = rest;
+		inlambda = scm_concat(ll, 3);
+
+		Expr* define = EMPTY_LIST;
+		scm_stack_push(&define);
+		ll[0] = DEFINE;
+		ll[1] = name;
+		ll[2] = inlambda;
+		define = scm_mk_list(ll, 3);
+
+		ll[0] = LAMBDA;
+		ll[1] = EMPTY_LIST;
+		ll[2] = define;
+		ll[3] = call;
+		toRet = scm_mk_list(ll, 4);
+		toRet = scm_mk_list(&toRet, 1);
+
+		scm_stack_pop(&define);
+		scm_stack_pop(&inlambda);
+		scm_stack_pop(&call);
+	}
+
+	scm_stack_pop(&toRet);
+	scm_stack_pop(&decomp[1]);
+	scm_stack_pop(&decomp[0]);
+
+	return toRet;
 }
 
 static Expr* let2lambda(Expr* let) {
