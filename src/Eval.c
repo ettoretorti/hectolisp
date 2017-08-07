@@ -611,9 +611,33 @@ begin:
 
 			Expr* newEnv = NULL;
 			if(scm_is_pair(anames)) {
-				size_t nlen = scm_list_len(anames);
-				size_t alen = scm_list_len(args);
-				newEnv = nlen == alen ? scm_mk_env(cenv, anames, args) : scm_mk_error("incorrect number of args to procedure");
+				int nlen = scm_list_len(anames);
+				// args may be of the form (x y . zs)
+				if(nlen == -1) {
+					newEnv = scm_mk_env(cenv, EMPTY_LIST, EMPTY_LIST);
+					Expr* rns;
+					Expr* ras;
+					for(rns = anames, ras = args; scm_is_pair(rns); rns = scm_cdr(rns), ras = scm_cdr(ras)) {
+						if(ras == EMPTY_LIST) {
+							newEnv = scm_mk_error("too few args to procedure");
+							break;
+						}
+						scm_env_define_unsafe(newEnv, scm_car(rns), scm_car(ras));
+					}
+
+					if(scm_is_symbol(rns)) {
+						scm_env_define_unsafe(newEnv, rns, ras);
+					} else if(rns == EMPTY_LIST) {
+						if(ras != EMPTY_LIST) {
+							newEnv = scm_mk_error("too many args to procedure");
+						}
+					} else if(!scm_is_error(newEnv)) {
+						newEnv = scm_mk_error("last entry in dotted tail args isn't a symbol");
+					}
+				} else {
+					int alen = scm_list_len(args);
+					newEnv = nlen == alen ? scm_mk_env(cenv, anames, args) : scm_mk_error("incorrect number of args to procedure");
+				}
 			} else {
 				Expr* argname = EMPTY_LIST;
 				Expr* flatargs = EMPTY_LIST;
