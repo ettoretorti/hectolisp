@@ -81,16 +81,38 @@ Expr* scm_env_lookup(Expr* env, Expr* sym) {
 	return scm_mk_error(buf);
 }
 
+Expr* scm_env_define_unsafe(Expr* env, Expr* sym, Expr* val) {
+	assert(env); assert(sym); assert(val);
+
+	scm_stack_push(&env);
+	scm_stack_push(&val);
+
+	Expr* t = scm_mk_pair(sym, scm_cadr(env));
+	if(!t) goto end;
+	scm_cdr(env)->pair.car = t;
+
+	t = scm_mk_pair(val, scm_caddr(env));
+	if(!t) {
+		// restore change to name list
+		scm_cdr(env)->pair.car = scm_cdadr(env);
+		goto end;
+	}
+	scm_cddr(env)->pair.car = t;
+
+end:
+	scm_stack_pop(&val);
+	scm_stack_pop(&env);
+
+	return t ? val : OOM;
+}
+
 Expr* scm_env_define(Expr* env, Expr* sym, Expr* val) {
 	assert(env); assert(sym); assert(val);
 
 	int idx = idxOf(sym, scm_cadr(env));
 
 	if(idx == -1) {
-		scm_cdr(env)->pair.car = scm_mk_pair(sym, scm_cadr(env));
-		scm_cddr(env)->pair.car = scm_mk_pair(val, scm_caddr(env));
-
-		return val;
+		return scm_env_define_unsafe(env, sym, val);
 	} else {
 		//TODO not sure overriding anyway is the best option...
 		return replace(idx, scm_caddr(env), val);

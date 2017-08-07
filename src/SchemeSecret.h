@@ -47,6 +47,7 @@ Expr* scm_env_lookup(Expr* env, Expr* sym);
 
 // Returns val on success, an scm error on failure
 Expr* scm_env_define(Expr* env, Expr* sym, Expr* val);
+Expr* scm_env_define_unsafe(Expr* env, Expr* sym, Expr* val);
 
 // Returns val on success, an scm_error on failure
 Expr* scm_env_set(Expr* env, Expr* sym, Expr* val);
