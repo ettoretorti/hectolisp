@@ -59,7 +59,7 @@ static Expr* replace(int idx, Expr* list, Expr* val) {
 }
 
 Expr* scm_env_lookup(Expr* env, Expr* sym) {
-	assert(env); assert(sym); assert(scm_is_symbol(sym));
+	assert(env); assert(sym); assert(scm_is_symbol(sym)); assert(env->tag == ENV || env == FALSE);
 
 	while(env != FALSE) {
 		Expr* names = scm_cadr(env);
@@ -82,7 +82,7 @@ Expr* scm_env_lookup(Expr* env, Expr* sym) {
 }
 
 Expr* scm_env_define_unsafe(Expr* env, Expr* sym, Expr* val) {
-	assert(env); assert(sym); assert(val);
+	assert(env); assert(sym); assert(val); assert(env->tag == ENV || env == FALSE);
 
 	scm_stack_push(&env);
 	scm_stack_push(&val);
@@ -107,7 +107,7 @@ end:
 }
 
 Expr* scm_env_define(Expr* env, Expr* sym, Expr* val) {
-	assert(env); assert(sym); assert(val);
+	assert(env); assert(sym); assert(val); assert(env->tag == ENV || env == FALSE);
 
 	int idx = idxOf(sym, scm_cadr(env));
 
@@ -120,7 +120,7 @@ Expr* scm_env_define(Expr* env, Expr* sym, Expr* val) {
 }
 
 Expr* scm_env_set(Expr* env, Expr* sym, Expr* val) {
-	assert(env); assert(sym); assert(val);
+	assert(env); assert(sym); assert(val); assert(env->tag == ENV || env == FALSE);
 
 	while(env != FALSE) {
 		int idx = idxOf(sym, scm_cadr(env));
@@ -143,7 +143,10 @@ Expr* scm_mk_env(Expr* parent, Expr* names, Expr* vals) {
 	assert(parent); assert(names); assert(vals);
 
 	Expr* ll[3] = { parent, names, vals };
-	return scm_mk_list(ll, 3);
+	Expr* toRet = scm_mk_list(ll, 3);
+	if(scm_is_error(toRet)) return toRet;
+	toRet->tag = ENV;
+	return toRet;
 }
 
 

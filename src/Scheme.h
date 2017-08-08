@@ -32,7 +32,7 @@ struct Expr {
 			struct Expr* cdr;
 		} pair;
 	};
-	enum { ATOM, PAIR, CLOSURE, ELIST } tag : 2;
+	enum { ATOM, PAIR, CLOSURE, ELIST, ENV } tag : 3;
 	bool protect : 1;
 	bool mark : 1;
 };
@@ -47,6 +47,7 @@ extern Expr* FALSE;
 bool scm_is_atom(const Expr* e) puref;
 bool scm_is_pair(const Expr* e) puref;
 bool scm_is_closure(const Expr* e) puref;
+bool scm_is_env(const Expr* e) puref;
 
 bool scm_is_num(const Expr* e) puref;
 bool scm_is_int(const Expr* e) puref;

@@ -136,6 +136,9 @@ static void print(Expr* e, buf* b) {
 		print(scm_closure_args(e), b);
 		append(b, ")#");
 		return;
+	} else if(scm_is_env(e)) {
+		append(b, "#(ENVIRONMENT)");
+		return;
 	}
 
 	switch(e->atom.type) {

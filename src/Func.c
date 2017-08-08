@@ -887,13 +887,68 @@ static Expr* c_code(Expr* args) {
 	assert(args);
 
 	if(args == EMPTY_LIST) return scm_mk_error("closure-code expects an argument");
-	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("closure-acode expects only 1 argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("closure-code expects only 1 argument");
 
 	Expr* fst = scm_car(args);
 
 	if(fst->tag != CLOSURE) return scm_mk_error("argument to closure-code is not a closure");
 
 	return scm_closure_body(fst);
+}
+
+static Expr* c_env(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("closure-env expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("closure-env expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	if(fst->tag != CLOSURE) return scm_mk_error("argument to closure-env is not a closure");
+
+	return scm_closure_env(fst);
+}
+
+static Expr* env_parent(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("env-parent expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("env-parent expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	if(fst == FALSE) return EMPTY_LIST;
+	if(!scm_is_env(fst)) return scm_mk_error("env-parent expects an environment");
+
+	return scm_car(fst);
+}
+
+static Expr* env_names(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("env-names expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("env-names expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	if(fst == FALSE) return EMPTY_LIST;
+	if(!scm_is_env(fst)) return scm_mk_error("env-names expects an environment");
+
+	return scm_cadr(fst);
+}
+
+static Expr* env_values(Expr* args) {
+	assert(args);
+
+	if(args == EMPTY_LIST) return scm_mk_error("env-values expects an argument");
+	if(scm_cdr(args) != EMPTY_LIST) return scm_mk_error("env-values expects only 1 argument");
+
+	Expr* fst = scm_car(args);
+
+	if(fst == FALSE) return EMPTY_LIST;
+	if(!scm_is_env(fst)) return scm_mk_error("env-values expects an environment");
+
+	return scm_caddr(fst);
 }
 
 static Expr* gc(Expr* args) {
@@ -1002,6 +1057,11 @@ mk_ff(P_PROC, p_procedure);
 mk_ff(C_PROC, c_procedure);
 mk_ff(C_ARGS, c_args);
 mk_ff(C_CODE, c_code);
+mk_ff(C_ENV, c_env);
+
+mk_ff(E_PAR, env_parent);
+mk_ff(E_NAM, env_names);
+mk_ff(E_VAL, env_values);
 
 mk_ff(GC, gc);
 mk_ff(FREE_M, free_mem);
@@ -1070,6 +1130,11 @@ void scm_init_func() {
 	bind_ff("compound-procedure?", C_PROC);
 	bind_ff("closure-args", C_ARGS);
 	bind_ff("closure-code", C_CODE);
+	bind_ff("closure-env", C_ENV);
+
+	bind_ff("env-parent", E_PAR);
+	bind_ff("env-names", E_NAM);
+	bind_ff("env-values", E_VAL);
 
 	bind_ff("all-syms", ALLSYMS);
 	bind_ff("cur-env", CURENV);

@@ -102,6 +102,10 @@ bool scm_is_closure(const Expr* e) {
 	assert(e);
 	return e->tag == CLOSURE;
 }
+bool scm_is_env(const Expr* e) {
+	assert(e);
+	return e->tag == ENV;
+}
 bool scm_is_num(const Expr* e) {
 	assert(e);
 	return e->tag == ATOM && (e->atom.type == INT || e->atom.type == REAL);
@@ -187,12 +191,12 @@ ffunc scm_ffval(const Expr* e) {
 
 Expr* scm_car(const Expr* e) {
 	assert(e);
-	assert(e->tag == PAIR || e->tag == CLOSURE);
+	assert(e->tag == PAIR || e->tag == CLOSURE || e->tag == ENV);
 	return e->pair.car;
 }
 Expr* scm_cdr(const Expr* e) {
 	assert(e);
-	assert(e->tag == PAIR || e->tag == CLOSURE);
+	assert(e->tag == PAIR || e->tag == CLOSURE || e->tag == ENV);
 	return e->pair.cdr;
 }
 
