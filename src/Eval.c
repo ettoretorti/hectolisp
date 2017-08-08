@@ -632,6 +632,39 @@ begin:
 			scm_stack_pop(&args);
 			e = e ? e : OOM;
 			goto begin;
+		} else  if(is_tpair(e, R_EVAL)) {
+			e = scm_cdr(e);
+			if(!scm_is_pair(e)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("insufficient arguments to __eval");
+			}
+			Expr* toEval = scm_car(e);
+
+			toEval = save_eval(toEval);
+			if(scm_is_error(toEval)) {
+				scm_stack_pop(&e);
+				return toEval;
+			}
+
+			e = scm_cdr(e);
+			if(!scm_is_pair(e)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("insufficient arguments to __eval");
+			}
+			Expr* env = scm_car(e);
+			scm_stack_push(&toEval);
+			env = save_eval(env);
+
+			if(!scm_is_env(env) && env != FALSE) {
+				scm_stack_pop(&toEval); scm_stack_pop(&e);
+				if(scm_is_error(env)) return env;
+				return scm_mk_error("invalid environment passed to __eval");
+			}
+
+			CURRENT_ENV = env;
+			e = toEval;
+			scm_stack_pop(&toEval);
+			goto begin;
 		} else {
 			//TODO GC safety
 			Expr* func = save_eval(scm_car(e));
