@@ -34,6 +34,8 @@ Expr* COND = NULL;
 Expr* ELSE = NULL;
 Expr* AND = NULL;
 Expr* OR = NULL;
+Expr* R_APPLY;
+Expr* R_EVAL;
 
 // Keep a cache for characters since there are only 256 possible ones
 #define mk_chr(x) { .tag = ATOM, .atom = { .type = CHAR, .cval = (char)(x) }, .protect = true, .mark = true }
@@ -392,6 +394,8 @@ void scm_init_expr() {
 	ELSE = scm_get_symbol("else");
 	AND = scm_get_symbol("and");
 	OR = scm_get_symbol("or");
+	R_APPLY = scm_get_symbol("__apply");
+	R_EVAL = scm_get_symbol("__eval");
 	EMPTY_LIST = (Expr*) &_EMPTY_LIST;
 	TRUE = (Expr*) &_TRUE;
 	FALSE = (Expr*) &_FALSE;
@@ -413,6 +417,8 @@ void scm_reset_expr() {
 	ELSE = NULL;
 	AND = NULL;
 	OR = NULL;
+	R_APPLY = NULL;
+	R_EVAL = NULL;
 	EMPTY_LIST = NULL;
 	TRUE = NULL;
 	FALSE = NULL;

@@ -17,6 +17,23 @@ static inline bool is_last(Expr* l) {
 	return !scm_is_pair(scm_cdr(l));
 }
 
+static Expr* quote_all_inplace(Expr* l) {
+	scm_stack_push(&l);
+	Expr* cur = l;
+	while(scm_is_pair(cur)) {
+		Expr* ll[2] = { QUOTE, scm_car(cur) };
+		cur->pair.car = scm_mk_list(ll, 2);
+		if(scm_is_error(scm_car(cur))) {
+			scm_stack_pop(&l);
+			return scm_car(cur);
+		}
+		cur = scm_cdr(cur);
+	}
+
+	scm_stack_pop(&l);
+	return l;
+}
+
 static Expr* save_eval(Expr* es) {
 	Expr* curEnv = CURRENT_ENV;
 	scm_stack_push(&curEnv);
@@ -578,6 +595,43 @@ begin:
 
 			scm_stack_pop(&e);
 			return scm_mk_closure(CURRENT_ENV, args, body);
+		} else  if(is_tpair(e, R_APPLY)) {
+			e = scm_cdr(e);
+
+			if(!scm_is_pair(e)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("insufficient arguments to __apply");
+			}
+			Expr* func = scm_car(e);
+
+			e = scm_cdr(e);
+			if(!scm_is_pair(e)) {
+				scm_stack_pop(&e);
+				return scm_mk_error("insufficient arguments to __apply");
+			}
+			Expr* args = scm_car(e);
+
+			scm_stack_push(&args);
+			args = save_eval(args);
+			if(scm_is_error(args)) {
+				scm_stack_pop(&args); scm_stack_pop(&e);
+				return args;
+			}
+			if(!scm_is_pair(args)) {
+				scm_stack_pop(&args); scm_stack_pop(&e);
+				return scm_mk_error("args to apply aren't a list");
+			}
+			args = quote_all_inplace(args);
+			if(scm_is_error(args)) {
+				scm_stack_pop(&args); scm_stack_pop(&e);
+				return args;
+			}
+
+			// tail call
+			e = scm_mk_pair(func, args);
+			scm_stack_pop(&args);
+			e = e ? e : OOM;
+			goto begin;
 		} else {
 			//TODO GC safety
 			Expr* func = save_eval(scm_car(e));

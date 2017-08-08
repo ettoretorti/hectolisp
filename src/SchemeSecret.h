@@ -25,6 +25,8 @@ extern Expr* COND;
 extern Expr* ELSE;
 extern Expr* AND;
 extern Expr* OR;
+extern Expr* R_APPLY;
+extern Expr* R_EVAL;
 
 //Memory
 void scm_init_mem();
