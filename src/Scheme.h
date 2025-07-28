@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#define puref __attribute((__const__))
+#define puref __attribute((__pure__))
 
 typedef struct Expr Expr;
 
